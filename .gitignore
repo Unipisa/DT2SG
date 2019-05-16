@@ -1,0 +1,13 @@
+secret*
+*.suo
+*.user
+_ReSharper.*
+bin
+obj
+packages
+vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
