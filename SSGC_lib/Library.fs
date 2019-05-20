@@ -5,8 +5,16 @@ open System.IO
 open FSharp.Data
 open FSharp.Data.CsvExtensions
 open LibGit2Sharp
+open LibGit2Sharp
+
+
+//TODO: 
+// *  handle and exclude symbolic links
+// *  handle directories that are not versions (how? replace in each revision ?)
 
 module Lib =
+    // date format into author.csv
+    let date_format = "MM'/'dd'/'yyyy HH':'mm':'ss"
 
     let rec directoryCopy srcPath dstPath copySubDirs =
 
@@ -36,25 +44,23 @@ module Lib =
         let gitPath = Repository.Init(path + "/../SGit")
         gitPath
 
-    let commitVersionToGit(versionPath) =
+    let commitVersionToGit(versionPath, message, author_name, author_handle, commit_date) =
         let repo = new Repository(versionPath)
         Commands.Stage(repo, "*");
         // Create the committer's signature and commit
-        let author = new Signature("James", "@jugglingnutcase", DateTimeOffset.Now);
+        let author = Signature(author_name, author_handle, commit_date);
         let committer = author;
         // Commit to the repository
-        let commit = repo.Commit("Here's a commit i made!", author, committer);
+        let commit = repo.Commit(message, author, committer);
         ()
 
     let createSyntheticGit(root_path:string) =
-        //let pp = Directory.GetCurrentDirectory()
-        //let np = pp + "/" + root_path
-        //Directory.SetCurrentDirectory(root_path)
         let gitPath = initGit(root_path);
         let csvFilename = root_path + "/../authors.csv"
         let directories = 
             Array.sort(Directory.GetDirectories(root_path)) 
             |> Array.map (fun (a:string) -> a.Substring(root_path.Length + 1 , a.Length - (root_path.Length + 1) ))
+            //|> Array.filter (fuun (a:string) -> not(a = ".git")
         let authorsAndDateStrings =CsvFile.Load(csvFilename).Cache()        
         for dir in directories do
             let finder = fun (row:CsvRow) -> (row.GetColumn "dir" = dir)  
@@ -62,9 +68,24 @@ module Lib =
             let dest = Path.Combine(root_path,"./../SGit/")
             let orig = Path.Combine(root_path, dir )
             directoryCopy orig dest true
-            commitVersionToGit(gitPath)
-            //TODO: passare info autore e data
-            //TODO: remove direcotry
+            let none(a) = 
+                if String.IsNullOrWhiteSpace(a) then "n.d." else a
+            let author_name = if info.IsSome then info.Value.GetColumn "author_name" else none(null)
+            let author_handle = 
+                if info.IsSome  
+                    then 
+                        let (handle:string) = (info.Value.GetColumn "author_github") 
+                        if not(String.IsNullOrWhiteSpace(handle)) 
+                            then none("@" + handle) 
+                            else none((info.Value.GetColumn "author_email"))
+                    else none(null)
+            let message = if info.IsSome then none(info.Value.GetColumn "message") else none(null)
+            let commit_date =
+                if info.IsSome
+                    then DateTimeOffset.ParseExact(info.Value.GetColumn "date", date_format, System.Globalization.CultureInfo.InvariantCulture)
+                    else DateTimeOffset.Now
+            Console.WriteLine("Commit dir: {0} with message : {1}", orig, message)
+            commitVersionToGit(gitPath.Replace(".git/", ""), "V" + dir + " - " + message, author_name.TrimEnd(), author_handle.TrimEnd(), commit_date)
             ()
         done
 
