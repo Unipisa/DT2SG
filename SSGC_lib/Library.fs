@@ -34,7 +34,7 @@ module Lib =
     let initGit(path)   =
         Directory.CreateDirectory(path + "/../SGit") |> ignore
         let gitPath = Repository.Init(path + "/../SGit")
-        ()
+        gitPath
 
     let commitVersionToGit(versionPath) =
         let repo = new Repository(versionPath)
@@ -52,15 +52,19 @@ module Lib =
         //Directory.SetCurrentDirectory(root_path)
         let gitPath = initGit(root_path);
         let csvFilename = root_path + "/../authors.csv"
-        let directories = Array.sort(Directory.GetDirectories(root_path)) |> Array.map (fun (a:string) -> a.Substring(root_path.Length + 1 , a.Length - (root_path.Length + 1) ))
+        let directories = 
+            Array.sort(Directory.GetDirectories(root_path)) 
+            |> Array.map (fun (a:string) -> a.Substring(root_path.Length + 1 , a.Length - (root_path.Length + 1) ))
         let authorsAndDateStrings =CsvFile.Load(csvFilename).Cache()        
         for dir in directories do
             let finder = fun (row:CsvRow) -> (row.GetColumn "dir" = dir)  
             let info =  Seq.tryFind finder (authorsAndDateStrings.Rows) 
-            let dest = Path.Combine(root_path,"./../SGit/" + dir)
+            let dest = Path.Combine(root_path,"./../SGit/")
             let orig = Path.Combine(root_path, dir )
             directoryCopy orig dest true
-            commitVersionToGit(dest)
+            commitVersionToGit(gitPath)
+            //TODO: passare info autore e data
+            //TODO: remove direcotry
             ()
         done
 
