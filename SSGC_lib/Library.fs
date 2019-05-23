@@ -65,7 +65,7 @@ module Lib =
         for dir in directories do
             let finder = fun (row:CsvRow) -> (row.GetColumn "dir" = dir)  
             let info =  Seq.tryFind finder (authorsAndDateStrings.Rows) 
-            let dest = Path.Combine(root_path,"./../SGit/")
+            let dest = Path.Combine(root_path,"./../SGit/WORKBENCH_TEMPLATE/SRC/")
             let orig = Path.Combine(root_path, dir )
             directoryCopy orig dest true
             let none(a) = 
@@ -74,10 +74,11 @@ module Lib =
             let author_handle = 
                 if info.IsSome  
                     then 
-                        let (handle:string) = (info.Value.GetColumn "author_github") 
-                        if not(String.IsNullOrWhiteSpace(handle)) 
-                            then none("@" + handle) 
-                            else none((info.Value.GetColumn "author_email"))
+                        //let (handle:string) = (info.Value.GetColumn "author_github") 
+                        //if not(String.IsNullOrWhiteSpace(handle)) 
+                        //    then none("@" + handle) 
+                        //    else 
+                        none((info.Value.GetColumn "author_email"))
                     else none(null)
             let message = if info.IsSome then none(info.Value.GetColumn "message") else none(null)
             let commit_date =
