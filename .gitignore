@@ -13,3 +13,5 @@ vscode
 !.vscode/extensions.json
 demo
 demo/*
+rel
+rel/*

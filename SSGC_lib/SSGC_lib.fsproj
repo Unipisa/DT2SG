@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="Library.fs" />
+    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
   </ItemGroup>
 
   <ItemGroup>

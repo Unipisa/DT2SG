@@ -85,7 +85,7 @@ module Lib =
                 if info.IsSome
                     then DateTimeOffset.ParseExact(info.Value.GetColumn "date", date_format, System.Globalization.CultureInfo.InvariantCulture)
                     else DateTimeOffset.Now
-            Console.WriteLine("Commit dir: {0} with message : {1}", orig, message)
+            Console.WriteLine("Commit dir: {0} with message : {1} on {2}", orig, message, commit_date.ToLocalTime().ToString())
             commitVersionToGit(gitPath.Replace(".git/", ""), "V" + dir + " - " + message, author_name.TrimEnd(), author_handle.TrimEnd(), commit_date)
             ()
         done
