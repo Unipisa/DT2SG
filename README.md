@@ -19,9 +19,7 @@ It born from the need of [DIUNIPI4SWH](https://github.com/Unipisa/DIUNIPI4SWH) f
 dotnet run --project ./SSGC_app/SSGC_app.fsproj $path_to_src_root
 ~~~
 
-## Compilation
-
-~~~
+## Build
 
 ~~~
 dotnet "build" "./SSGC_app/SSGC_app.fsproj" 
