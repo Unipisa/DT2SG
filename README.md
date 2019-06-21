@@ -1,6 +1,6 @@
-# DIUNIPI-SWH-DT2SG
+# SWHAP-DT2SG
 
-[![Build Status](https://travis-ci.com/Unipisa/DIUNIPI-SWH-DT2SG.svg?token=uYktkpxbywknDpAJce3c&branch=master)](https://travis-ci.com/Unipisa/DIUNIPI-SWH-DT2SG)
+[![Build Status](https://travis-ci.com/Unipisa/DIUNIPI-SWH-DT2SG.svg?token=uYktkpxbywknDpAJce3c&branch=master)](https://travis-ci.com/Unipisa/SWHAP-DT2SG)
 
 Make a synthetic Git from directory tree 
 (Directory Tree 2 Synthetic Git).
@@ -16,12 +16,12 @@ It born from the need of [DIUNIPI4SWH](https://github.com/Unipisa/DIUNIPI4SWH) f
 
 ## Usage
 
-~~~
+```bash
 dotnet run --project ./SSGC_app/SSGC_app.fsproj $path_to_src_root
-~~~
+```
 
 ## Build
 
-~~~
+```bash
 dotnet "build" "./SSGC_app/SSGC_app.fsproj" 
-~~~
+```
