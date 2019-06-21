@@ -14,6 +14,8 @@ It born from the need of [DIUNIPI4SWH](https://github.com/Unipisa/DIUNIPI4SWH) f
 
 *The project is still in aplha stage and under development.*
 
+![example](./ETC/screen.png)
+
 ## Usage
 
 ```bash
