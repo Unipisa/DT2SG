@@ -1,0 +1,9 @@
+
+branch in lib2git
+https://github.com/libgit2/libgit2sharp/wiki/git-branch
+
+tag in git
+https://stackoverflow.com/questions/18216991/create-a-tag-in-a-github-repository
+
+tag in lib2git
+https://github.com/libgit2/libgit2sharp/wiki/git-tag
