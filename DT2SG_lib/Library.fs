@@ -1,4 +1,4 @@
-﻿namespace SSGC_lib
+﻿namespace DT2SG_lib
 
 open System
 open System.IO
@@ -39,9 +39,17 @@ module Lib =
     let hello name =
         printfn "Hello %s" name
           
-    let initGit(path)   =
-        Directory.CreateDirectory(path + "/../SGit") |> ignore
-        let gitPath = Repository.Init(path + "/../SGit")
+    let initGit(root_path, git_path)   =
+        Directory.CreateDirectory(git_path + "/../SGit") |> ignore
+        let gitPath =
+            if String.IsNullOrEmpty(git_path) 
+                then
+                    // if no existing git path given then create a new git    
+                    Repository.Init(root_path + "/../SGit")
+                else 
+                    // if existing git path given the try to use them
+                    let temp = Repository.Discover(git_path) //discover sale in su, forse meglio usare direttamente is valid
+                    if Repository.IsValid(temp) then temp else Repository.Init(root_path + "/../SGit")
         gitPath
 
     let commitVersionToGit(versionPath, message, author_name, author_handle, commit_date) =
@@ -54,8 +62,8 @@ module Lib =
         let commit = repo.Commit(message, author, committer);
         ()
 
-    let createSyntheticGit(root_path:string) =
-        let gitPath = initGit(root_path);
+    let createSyntheticGit(root_path:string, git_path:string) =
+        let gitPath = initGit(root_path, git_path);
         let csvFilename = root_path + "/../authors.csv"
         let directories = 
             Array.sort(Directory.GetDirectories(root_path)) 

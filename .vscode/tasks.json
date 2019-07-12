@@ -12,6 +12,16 @@
                 "reveal": "silent"
             },
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "run",
+            "command": "dotnet run",
+            "args": [
+               
+            ],
+            "isBuildCommand": false,
+            "showOutput": "always",
+            "problemMatcher": "$msCompile"
         }
     ]
 }

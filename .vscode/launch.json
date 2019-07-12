@@ -4,25 +4,15 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "/mnt/DATA/SRC/SoftwareHeritage/DIUNIPI-SWH-SSGC/SSGC_app/bin/Debug/netcoreapp2.2/SSGC_app.dll",
-            "args": [],
-            "cwd": "/mnt/DATA/SRC/SoftwareHeritage/DIUNIPI-SWH-SSGC/SSGC_app/bin/Debug/netcoreapp2.2/",
-            "stopAtEntry": false,
-            "console": "internalConsole"
-        },
-        {
-            "name": ".NET Core Launch (console)",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "/mnt/DATA/SRC/SoftwareHeritage/DIUNIPI-SWH-SSGC/SSGC_app/bin/Debug/netcoreapp2.2/SSGC_app.dll",
-            "args": [],
-            "cwd": "/mnt/DATA/SRC/SoftwareHeritage/DIUNIPI-SWH-SSGC/SSGC_app/bin/Debug/netcoreapp2.2/",
+            "program": "${workspaceFolder}/DT2SG_app/bin/Debug/netcoreapp2.2/DT2SG_app.dll",
+            "args": ["-r", "./demo/"],
+            "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "console": "internalConsole"
         }
