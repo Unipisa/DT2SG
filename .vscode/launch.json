@@ -11,7 +11,11 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/DT2SG_app/bin/Debug/netcoreapp2.2/DT2SG_app.dll",
-            "args": ["-r", "./demo/"],
+            "args": [
+                "-r", "/home/guido/SRC/SWHAP-DT2SG/DT2SG_app/demo/source/",
+                "-m", "/home/guido/SRC/SWHAP-DT2SG/DT2SG_app/demo/source_metadata/metadata_example.csv",
+                "-i", "/home/guido/SRC/SWHAP-DT2SG/DT2SG_app/demo/source_metadata/ignore_example.csv"
+            ],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "console": "internalConsole"
