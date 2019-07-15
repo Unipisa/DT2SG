@@ -19,8 +19,8 @@ let main argv =
     let mutable root_path, metadata_path, ignore_path = "", "", ""
     let run (a: CommandLine.Parsed<options>) =
         root_path <- a.Value.root_string
-        metadata_path <- a.Value.root_string
-        ignore_path <- a.Value.root_string
+        metadata_path <- a.Value.metadata_string
+        ignore_path <- a.Value.ignore_string
 
     let fail a =
         Console.WriteLine(a.ToString())
