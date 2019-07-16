@@ -36,25 +36,31 @@ module Lib =
         let branches = repo.Branches
         let mutable exist_SRC_branch = false;
         let mutable src_branch = repo.Head
-        for b in branches do 
-         if b.FriendlyName = "SRC" 
+        for b in branches do
+         if b.FriendlyName = "SRC"
             then
                 exist_SRC_branch <- true
                 src_branch <- b
         done
-        if not(exist_SRC_branch) 
+        if not(exist_SRC_branch)
             then
                 src_branch <- repo.CreateBranch("SRC")
+        repo.Refs.UpdateTarget("HEAD", "refs/heads/SRC") |> ignore
         //Commands.Checkout(repo , src_branch) |> ignore
         repo
 
 
-    let commitVersionToGit (repo:Repository, message, author_name, author_email, author_date, tag, committer_name, committer_email, commit_date) =
+    let commitVersionToGit (existing_files: Set<string>, dir_to_add: string, repo: Repository, message, author_name, author_email, author_date, tag, committer_name, committer_email, commit_date) =
         //let repo = new Repository(versionPath)
         //let branch = repo.CreateBranch("SRC");
+        let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
         let src_branch = repo.Branches.["SRC"]
-        Commands.Checkout(repo , src_branch) |> ignore
-        Commands.Stage(repo, "*")
+        Commands.Checkout(repo, src_branch) |> ignore
+        let files = 
+                    Directory.GetFiles (repo.Info.WorkingDirectory, "*.*", SearchOption.AllDirectories)
+                    |> Array.filter filter_existing_files
+        //repo.Stage (files);
+        Commands.Stage(repo, files)
         // Create the committer's signature and commit
         let author = Signature(author_name, author_email, author_date)
         let committer = Signature(committer_name, committer_email, commit_date)
@@ -70,7 +76,11 @@ module Lib =
 
     let createSyntheticGit (root_path: string, metadata_path: string, ignore_path: string) =
         let git = initGit (root_path)
-        let git_path = git.Info.Path 
+        let existing_files =   
+                    Directory.GetFiles (git.Info.WorkingDirectory, "*.*", SearchOption.AllDirectories)
+                    |> Set.ofArray
+
+        let git_path = git.Info.Path
         let authorsAndDateStrings = CsvFile.Load(metadata_path).Cache()
         let IgnoreList = CsvFile.Load(ignore_path).Cache().Rows
         let filter_ignore_dir = fun (row: string) ->
@@ -84,7 +94,7 @@ module Lib =
                 |> Array.filter filter_ignore_dir
         for dir in directories do
             let short_dir = after_latest_slash dir
-            let finder = fun (row: CsvRow) -> 
+            let finder = fun (row: CsvRow) ->
                             (row.GetColumn "dir" = short_dir)
             let info = Seq.tryFind finder (authorsAndDateStrings.Rows)
             let dest = git_path.Replace("/.git", "")
@@ -120,7 +130,10 @@ module Lib =
             Console.WriteLine
                 ("Commit dir: {0} with message : {1} on {2}", orig, message, commit_date.ToLocalTime().ToString())
             commitVersionToGit
-                (git,
+                (
+                 existing_files,
+                 short_dir,
+                 git,
                  short_dir + " - " + message,
                  author_name.TrimEnd(),
                  author_handle.TrimEnd(),
