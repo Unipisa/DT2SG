@@ -1,4 +1,4 @@
-﻿namespace DT2SG_lib
+namespace DT2SG_lib
 
 open FSharp.Data
 open FSharp.Data.CsvExtensions
@@ -27,8 +27,6 @@ module Lib =
                 let dstSubDir = System.IO.Path.Combine(dstPath, subdir.Name)
                 directoryCopy subdir.FullName dstSubDir copySubDirs
 
-    let hello name = printfn "Hello %s" name
-
     let initGit (root_path) =
         // find git going up
         let gitPath = Repository.Discover(root_path)
@@ -44,8 +42,32 @@ module Lib =
         done
         if not(exist_SRC_branch)
             then
-                src_branch <- repo.CreateBranch("SRC")
-        repo.Refs.UpdateTarget("HEAD", "refs/heads/SRC") |> ignore
+                //STRADA1 : creo banch e poi rimuovo files
+                //src_branch <- repo.CreateBranch("SRC") //problema esistenza files
+
+                //STRADA2 : creo branch senza 
+                let master = repo.Branches.["master"]
+                let master_tree = master.["HEAD"]
+
+                let emptyCommit = master.Commits //Array.empty<Commit>
+                let treeDefinition = new TreeDefinition()
+                let empty_signature = new Signature("Guido Scatena", "scatena.guido@unipi.it", DateTimeOffset.Now)
+                let tree = repo.ObjectDatabase.CreateTree(treeDefinition)
+                let commit = repo.ObjectDatabase.CreateCommit(empty_signature, empty_signature, "Synthetic Git Created", tree, emptyCommit, false)
+                src_branch <- repo.Branches.Add("SRC", commit)
+                //let a = repo.Checkout(master_tree, "source/v1", CheckoutOptions() )
+                //Commands.Stage(repo, "*")
+        //repo.Refs.UpdateTarget("HEAD", "refs/heads/SRC") |> ignore
+        //let master_branch = repo.Branches.["master"]
+
+
+
+
+
+        //https://stackoverflow.com/questions/19274783/orphan-branch-in-libgit2sharp
+        //https://github.com/libgit2/libgit2sharp/issues/415
+        //Assert.Equal(0, c.Parents.Count());
+
         //Commands.Checkout(repo , src_branch) |> ignore
         repo
 
@@ -55,11 +77,22 @@ module Lib =
         //let branch = repo.CreateBranch("SRC");
         let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
         let src_branch = repo.Branches.["SRC"]
+
         Commands.Checkout(repo, src_branch) |> ignore
-        let files = 
+        let options = new CheckoutOptions()
+        options.CheckoutModifiers <- CheckoutModifiers.Force // { CheckoutModifiers = CheckoutModifiers.Force };
+        repo.CheckoutPaths("master", ["source/" + dir_to_add], options);
+        directoryCopy (repo.Info.WorkingDirectory + "/source/" + dir_to_add) (repo.Info.WorkingDirectory) true
+        let files_unstage =
+                    Directory.GetFiles (repo.Info.WorkingDirectory + "/source/", "*.*", SearchOption.AllDirectories)
+        System.IO.Directory.Delete(repo.Info.WorkingDirectory + "/source/", true)
+        //for f in  existing_files do  repo.Index.Remove(f) done
+
+        let files =
                     Directory.GetFiles (repo.Info.WorkingDirectory, "*.*", SearchOption.AllDirectories)
-                    |> Array.filter filter_existing_files
+                    //|> Array.filter filter_existing_files
         //repo.Stage (files);
+        Commands.Unstage(repo, files_unstage)
         Commands.Stage(repo, files)
         // Create the committer's signature and commit
         let author = Signature(author_name, author_email, author_date)
@@ -76,7 +109,7 @@ module Lib =
 
     let createSyntheticGit (root_path: string, metadata_path: string, ignore_path: string) =
         let git = initGit (root_path)
-        let existing_files =   
+        let existing_files =
                     Directory.GetFiles (git.Info.WorkingDirectory, "*.*", SearchOption.AllDirectories)
                     |> Set.ofArray
 
@@ -99,7 +132,7 @@ module Lib =
             let info = Seq.tryFind finder (authorsAndDateStrings.Rows)
             let dest = git_path.Replace("/.git", "")
             let orig = Path.Combine(root_path, dir)
-            directoryCopy orig dest true
+            //directoryCopy orig dest true
             let none (a) = if String.IsNullOrWhiteSpace(a) then "n.d." else a
             let author_name = if info.IsSome then info.Value.GetColumn "author_name" else none (null)
             let author_handle =
