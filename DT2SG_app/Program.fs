@@ -35,6 +35,6 @@ let main argv =
     //let root_path = argv.[0];
 
     Lib.createSyntheticGit(root_path, metadata_path, ignore_path)
-    Console.WriteLine("You Git is in " + root_path + "/SGit/.git")
+    Console.WriteLine("You Git is in " + root_path )
 
     0 // return an integer exit code

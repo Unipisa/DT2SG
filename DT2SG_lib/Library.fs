@@ -1,4 +1,4 @@
-namespace DT2SG_lib
+﻿namespace DT2SG_lib
 
 open FSharp.Data
 open FSharp.Data.CsvExtensions
@@ -72,7 +72,7 @@ module Lib =
         repo
 
 
-    let commitVersionToGit (existing_files: Set<string>, dir_to_add: string, repo: Repository, message, author_name, author_email, author_date, tag, committer_name, committer_email, commit_date) =
+    let commitVersionToGit (existing_files: Set<string>, dir_to_add: string, repo: Repository, message, author_name, author_email, author_date, tag, committer_name, committer_email, commit_date, ignore_files_to_commit) =
         //let repo = new Repository(versionPath)
         //let branch = repo.CreateBranch("SRC");
         let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
@@ -82,6 +82,14 @@ module Lib =
         let options = new CheckoutOptions()
         options.CheckoutModifiers <- CheckoutModifiers.Force // { CheckoutModifiers = CheckoutModifiers.Force };
         repo.CheckoutPaths("master", ["source/" + dir_to_add], options);
+        if not(Seq.isEmpty ignore_files_to_commit)
+            then
+                for file in ignore_files_to_commit do
+                    repo.CheckoutPaths("master", ["source/" + file], options)
+                    if System.IO.File.Exists(repo.Info.WorkingDirectory + "/source/" + file) 
+                        then System.IO.File.Copy(repo.Info.WorkingDirectory + "/source/" + file, repo.Info.WorkingDirectory + "/" + file )
+                        else directoryCopy (repo.Info.WorkingDirectory + "/source/" + file) (repo.Info.WorkingDirectory) true
+                done
         directoryCopy (repo.Info.WorkingDirectory + "/source/" + dir_to_add) (repo.Info.WorkingDirectory) true
         let files_unstage =
                     Directory.GetFiles (repo.Info.WorkingDirectory + "/source/", "*.*", SearchOption.AllDirectories)
@@ -116,6 +124,7 @@ module Lib =
         let git_path = git.Info.Path
         let authorsAndDateStrings = CsvFile.Load(metadata_path).Cache()
         let IgnoreList = CsvFile.Load(ignore_path).Cache().Rows
+        let ignore_files = Seq.map (fun (ignore_row: CsvRow) -> ignore_row.Columns.[0]) IgnoreList
         let filter_ignore_dir = fun (row: string) ->
                                     not (Seq.exists (fun (ignore_row: CsvRow) ->
                                                         let dir = after_latest_slash row
@@ -125,6 +134,7 @@ module Lib =
         let directories =
                 Array.sort (Directory.GetDirectories(root_path))
                 |> Array.filter filter_ignore_dir
+        let last_dir = after_latest_slash (Array.last directories)
         for dir in directories do
             let short_dir = after_latest_slash dir
             let finder = fun (row: CsvRow) ->
@@ -156,6 +166,10 @@ module Lib =
 
             let tag = short_dir
 
+            let ignore_files_to_commit =
+                if short_dir  = last_dir
+                    then ignore_files
+                    else Seq.empty
 
             let commiter_name = "Guido Scatena"
             let committer_email = "guido.scatena@unipi.it"
@@ -174,7 +188,8 @@ module Lib =
                  tag,
                  commiter_name,
                  committer_email,
-                 commit_date
+                 commit_date,
+                 ignore_files_to_commit
                     )
             ()
         ()

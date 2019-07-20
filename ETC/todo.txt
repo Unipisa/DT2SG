@@ -1,9 +1,6 @@
+* far copiare files e directory del ignore nell ultima release
+* rifinire per autore git sintetico e email
+* testare su CMM
 
-branch in lib2git
-https://github.com/libgit2/libgit2sharp/wiki/git-branch
-
-tag in git
-https://stackoverflow.com/questions/18216991/create-a-tag-in-a-github-repository
-
-tag in lib2git
-https://github.com/libgit2/libgit2sharp/wiki/git-tag
+git config --global push.followTags true
+git push --follow-tags
