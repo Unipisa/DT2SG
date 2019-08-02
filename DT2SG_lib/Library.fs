@@ -68,8 +68,6 @@ module Lib =
                                 ) =
         let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
         let mutable src_branch = repo.Branches.[branch_name]
-
-        //qui "source" in realtà è path indicato - git path
         Commands.Checkout(repo, src_branch) |> ignore
         let options = new CheckoutOptions()
         options.CheckoutModifiers <- CheckoutModifiers.Force // { CheckoutModifiers = CheckoutModifiers.Force };
@@ -139,9 +137,15 @@ module Lib =
                                                         dir = (ignore_row.Columns.[0])
                                                     )
                                 IgnoreList)
+        //TODO: better investigare how to handle symlink
+        ///https://stackoverflow.com/questions/1485155/check-if-a-file-is-real-or-a-symbolic-link
+        let filter_symbolic_links = fun (path: string) ->
+                                    let pathInfo = new FileInfo(path);
+                                    not(pathInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
         let directories =
                 Array.sort (Directory.GetDirectories(root_path))
                 |> Array.filter filter_ignore_dir
+                |> Array.filter filter_symbolic_links
         let last_dir = after_latest_slash (Array.last directories)
         let mutable is_first_commit = true
         for dir in directories do
@@ -177,6 +181,7 @@ module Lib =
 
             let ignore_files_to_commit =
                 if short_dir  = last_dir
+                    //TODO: filter only existing files
                     then ignore_files
                     else Seq.empty
 
