@@ -29,9 +29,6 @@ module Lib =
         let gitPath = Repository.Discover(root_path)
         let repo = 
             if isNull(gitPath) then new Repository(root_path) else new Repository(gitPath)
-        repo
-
-    let initBranch(repo:Repository, branch_name:string, message:string, author:Signature, committer:Signature) =
         let branches = repo.Branches
         let mutable exist_SRC_branch = false;
         let mutable src_branch = repo.Head
@@ -47,8 +44,10 @@ module Lib =
                 let emptyCommit = Array.empty<Commit>
                 let treeDefinition = new TreeDefinition()
                 let tree = repo.ObjectDatabase.CreateTree(treeDefinition)
-                let commit = repo.ObjectDatabase.CreateCommit(author, committer, message, tree, emptyCommit, false)
+                let empty_sig = new Signature(committer_name, committer_email, DateTimeOffset.Now )
+                let commit = repo.ObjectDatabase.CreateCommit(empty_sig, empty_sig, "empty commit", tree, emptyCommit, false)
                 src_branch <- repo.Branches.Add(branch_name, commit)
+        repo
 
     let commitVersionToGit (
                                 existing_files: Set<string>, 
@@ -68,7 +67,7 @@ module Lib =
                                 is_first_commit:bool
                                 ) =
         let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
-        let src_branch = repo.Branches.[branch_name]
+        let mutable src_branch = repo.Branches.[branch_name]
 
         //qui "source" in realtà è path indicato - git path
         Commands.Checkout(repo, src_branch) |> ignore
@@ -100,9 +99,20 @@ module Lib =
         let committer = Signature(committer_name, committer_email, commit_date)
         // Commit to the repository
         if is_first_commit
-            then  initBranch(repo, branch_name, message, author, committer)
-            else  repo.Commit(message, author, committer) |> ignore
-        
+           then 
+                let emptyCommit = Array.empty<Commit>
+                let treeDefinition = new TreeDefinition()
+                let tree = repo.ObjectDatabase.CreateTree(treeDefinition)
+                let last_commit = repo.ObjectDatabase.CreateCommit(author, committer, message, tree, emptyCommit, false)
+                //let last_commit = repo.Commit(message, author, committer) 
+                let master_branch =  repo.Branches.["master"]
+                Commands.Checkout(repo, master_branch) |> ignore
+                repo.Branches.Remove(src_branch)
+                src_branch <- repo.Branches.Add(branch_name, last_commit)
+                Commands.Checkout(repo, src_branch) |> ignore
+            else
+                let last_commit = repo.Commit(message, author, committer)
+                () 
         let tag = repo.ApplyTag(tag);
         ()
 
