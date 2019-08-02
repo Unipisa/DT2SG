@@ -6,9 +6,6 @@ open LibGit2Sharp
 open System
 open System.IO
 
-//TODO: 
-// *  handle and exclude symbolic links
-// *  handle directories that are not versions (how? replace in each revision ?)
 module Lib =
     // date format into author.csv
     let date_format = "MM'/'dd'/'yyyy HH':'mm':'ss"
@@ -27,73 +24,69 @@ module Lib =
                 let dstSubDir = System.IO.Path.Combine(dstPath, subdir.Name)
                 directoryCopy subdir.FullName dstSubDir copySubDirs
 
-    let initGit (root_path) =
+    let initGit (root_path,branch_name,committer_name, committer_email) =
         // find git going up
         let gitPath = Repository.Discover(root_path)
-        let repo = new Repository(gitPath)
+        let repo = 
+            if isNull(gitPath) then new Repository(root_path) else new Repository(gitPath)
         let branches = repo.Branches
         let mutable exist_SRC_branch = false;
         let mutable src_branch = repo.Head
         for b in branches do
-         if b.FriendlyName = "SRC"
+         if b.FriendlyName = branch_name
             then
                 exist_SRC_branch <- true
                 src_branch <- b
         done
         if not(exist_SRC_branch)
             then
-                //STRADA1 : creo banch e poi rimuovo files
-                //src_branch <- repo.CreateBranch("SRC") //problema esistenza files
-
-                //STRADA2 : creo branch senza 
                 let master = repo.Branches.["master"]
                 let master_tree = master.["HEAD"]
-
                 let emptyCommit = master.Commits //Array.empty<Commit>
                 let treeDefinition = new TreeDefinition()
-                let empty_signature = new Signature("Guido Scatena", "scatena.guido@unipi.it", DateTimeOffset.Now)
+                let empty_signature = new Signature(committer_name, committer_email, DateTimeOffset.Now)
                 let tree = repo.ObjectDatabase.CreateTree(treeDefinition)
                 let commit = repo.ObjectDatabase.CreateCommit(empty_signature, empty_signature, "Synthetic Git Created", tree, emptyCommit, false)
-                src_branch <- repo.Branches.Add("SRC", commit)
-                //let a = repo.Checkout(master_tree, "source/v1", CheckoutOptions() )
-                //Commands.Stage(repo, "*")
-        //repo.Refs.UpdateTarget("HEAD", "refs/heads/SRC") |> ignore
-        //let master_branch = repo.Branches.["master"]
-
-
-
-
-
-        //https://stackoverflow.com/questions/19274783/orphan-branch-in-libgit2sharp
-        //https://github.com/libgit2/libgit2sharp/issues/415
-        //Assert.Equal(0, c.Parents.Count());
-
-        //Commands.Checkout(repo , src_branch) |> ignore
+                src_branch <- repo.Branches.Add(branch_name, commit)
         repo
 
 
-    let commitVersionToGit (existing_files: Set<string>, dir_to_add: string, repo: Repository, message, author_name, author_email, author_date, tag, committer_name, committer_email, commit_date, ignore_files_to_commit) =
-        //let repo = new Repository(versionPath)
-        //let branch = repo.CreateBranch("SRC");
+    let commitVersionToGit (
+                                existing_files: Set<string>, 
+                                dir_to_add: string, 
+                                repo: Repository, 
+                                message, 
+                                author_name, 
+                                author_email, 
+                                author_date, 
+                                tag, 
+                                committer_name, 
+                                committer_email, 
+                                commit_date, 
+                                ignore_files_to_commit,
+                                branch_name,
+                                relative_src_path
+                                ) =
         let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
-        let src_branch = repo.Branches.["SRC"]
+        let src_branch = repo.Branches.[branch_name]
 
+        //qui "source" in realtà è path indicato - git path
         Commands.Checkout(repo, src_branch) |> ignore
         let options = new CheckoutOptions()
         options.CheckoutModifiers <- CheckoutModifiers.Force // { CheckoutModifiers = CheckoutModifiers.Force };
-        repo.CheckoutPaths("master", ["source/" + dir_to_add], options);
+        repo.CheckoutPaths("master", [relative_src_path + dir_to_add], options);
         if not(Seq.isEmpty ignore_files_to_commit)
             then
                 for file in ignore_files_to_commit do
-                    repo.CheckoutPaths("master", ["source/" + file], options)
-                    if System.IO.File.Exists(repo.Info.WorkingDirectory + "/source/" + file) 
-                        then System.IO.File.Copy(repo.Info.WorkingDirectory + "/source/" + file, repo.Info.WorkingDirectory + "/" + file )
-                        else directoryCopy (repo.Info.WorkingDirectory + "/source/" + file) (repo.Info.WorkingDirectory) true
+                    repo.CheckoutPaths("master", [relative_src_path + file], options)
+                    if System.IO.File.Exists(repo.Info.WorkingDirectory + relative_src_path + file) 
+                        then System.IO.File.Copy(repo.Info.WorkingDirectory + relative_src_path + file, repo.Info.WorkingDirectory + "/" + file )
+                        else directoryCopy (repo.Info.WorkingDirectory + relative_src_path + file) (repo.Info.WorkingDirectory) true
                 done
-        directoryCopy (repo.Info.WorkingDirectory + "/source/" + dir_to_add) (repo.Info.WorkingDirectory) true
+        directoryCopy (repo.Info.WorkingDirectory + relative_src_path + dir_to_add) (repo.Info.WorkingDirectory) true
         let files_unstage =
-                    Directory.GetFiles (repo.Info.WorkingDirectory + "/source/", "*.*", SearchOption.AllDirectories)
-        System.IO.Directory.Delete(repo.Info.WorkingDirectory + "/source/", true)
+                    Directory.GetFiles (repo.Info.WorkingDirectory + relative_src_path, "*.*", SearchOption.AllDirectories)
+        System.IO.Directory.Delete(repo.Info.WorkingDirectory + relative_src_path, true)
         //for f in  existing_files do  repo.Index.Remove(f) done
 
         let files =
@@ -115,13 +108,15 @@ module Lib =
                         temp.[temp.Length - 1]
 
 
-    let createSyntheticGit (root_path: string, metadata_path: string, ignore_path: string) =
-        let git = initGit (root_path)
+    let createSyntheticGit (root_path: string, metadata_path: string, ignore_path: string, committer_name, committer_email) =
+        let branch_name = "src"
+        let git = initGit (root_path, branch_name, committer_name, committer_email)
         let existing_files =
                     Directory.GetFiles (git.Info.WorkingDirectory, "*.*", SearchOption.AllDirectories)
                     |> Set.ofArray
 
         let git_path = git.Info.Path
+        let relative_src_path = root_path.Replace(git_path.Replace("/.git", ""), "")
         let authorsAndDateStrings = CsvFile.Load(metadata_path).Cache()
         let IgnoreList = CsvFile.Load(ignore_path).Cache().Rows
         let ignore_files = Seq.map (fun (ignore_row: CsvRow) -> ignore_row.Columns.[0]) IgnoreList
@@ -171,8 +166,6 @@ module Lib =
                     then ignore_files
                     else Seq.empty
 
-            let commiter_name = "Guido Scatena"
-            let committer_email = "guido.scatena@unipi.it"
             let commit_date = DateTimeOffset.Now
             Console.WriteLine
                 ("Commit dir: {0} with message : {1} on {2}", orig, message, commit_date.ToLocalTime().ToString())
@@ -186,10 +179,12 @@ module Lib =
                  author_handle.TrimEnd(),
                  author_date,
                  tag,
-                 commiter_name,
+                 committer_name,
                  committer_email,
                  commit_date,
-                 ignore_files_to_commit
+                 ignore_files_to_commit,
+                 branch_name,
+                 relative_src_path
                     )
             ()
         ()
