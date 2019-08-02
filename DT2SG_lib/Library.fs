@@ -29,6 +29,9 @@ module Lib =
         let gitPath = Repository.Discover(root_path)
         let repo = 
             if isNull(gitPath) then new Repository(root_path) else new Repository(gitPath)
+        repo
+
+    let initBranch(repo:Repository, branch_name:string, message:string, author:Signature, committer:Signature) =
         let branches = repo.Branches
         let mutable exist_SRC_branch = false;
         let mutable src_branch = repo.Head
@@ -41,15 +44,11 @@ module Lib =
         if not(exist_SRC_branch)
             then
                 let master = repo.Branches.["master"]
-                let master_tree = master.["HEAD"]
-                let emptyCommit = master.Commits //Array.empty<Commit>
+                let emptyCommit = Array.empty<Commit>
                 let treeDefinition = new TreeDefinition()
-                let empty_signature = new Signature(committer_name, committer_email, DateTimeOffset.Now)
                 let tree = repo.ObjectDatabase.CreateTree(treeDefinition)
-                let commit = repo.ObjectDatabase.CreateCommit(empty_signature, empty_signature, "Synthetic Git Created", tree, emptyCommit, false)
+                let commit = repo.ObjectDatabase.CreateCommit(author, committer, message, tree, emptyCommit, false)
                 src_branch <- repo.Branches.Add(branch_name, commit)
-        repo
-
 
     let commitVersionToGit (
                                 existing_files: Set<string>, 
@@ -65,7 +64,8 @@ module Lib =
                                 commit_date, 
                                 ignore_files_to_commit,
                                 branch_name,
-                                relative_src_path
+                                relative_src_path,
+                                is_first_commit:bool
                                 ) =
         let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
         let src_branch = repo.Branches.[branch_name]
@@ -99,7 +99,10 @@ module Lib =
         let author = Signature(author_name, author_email, author_date)
         let committer = Signature(committer_name, committer_email, commit_date)
         // Commit to the repository
-        let commit = repo.Commit(message, author, committer)
+        if is_first_commit
+            then  initBranch(repo, branch_name, message, author, committer)
+            else  repo.Commit(message, author, committer) |> ignore
+        
         let tag = repo.ApplyTag(tag);
         ()
 
@@ -130,6 +133,7 @@ module Lib =
                 Array.sort (Directory.GetDirectories(root_path))
                 |> Array.filter filter_ignore_dir
         let last_dir = after_latest_slash (Array.last directories)
+        let mutable is_first_commit = true
         for dir in directories do
             let short_dir = after_latest_slash dir
             let finder = fun (row: CsvRow) ->
@@ -184,7 +188,9 @@ module Lib =
                  commit_date,
                  ignore_files_to_commit,
                  branch_name,
-                 relative_src_path
+                 relative_src_path,
+                 is_first_commit
                     )
+            is_first_commit <- false
             ()
         ()
