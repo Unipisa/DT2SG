@@ -56,7 +56,7 @@ module Lib =
                                 message, 
                                 author_name, 
                                 author_email, 
-                                author_date, 
+                                author_date:DateTimeOffset, 
                                 tag, 
                                 committer_name, 
                                 committer_email, 
@@ -93,6 +93,9 @@ module Lib =
         Commands.Unstage(repo, files_unstage)
         Commands.Stage(repo, files)
         // Create the committer's signature and commit
+        let offset = author_date.ToUnixTimeSeconds()
+        //let d = DateTimeOffset.FromUnixTimeSeconds(offset)
+        //let question = (author_date = d )
         let author = Signature(author_name, author_email, author_date)
         let committer = Signature(committer_name, committer_email, commit_date)
         // Commit to the repository
@@ -102,7 +105,18 @@ module Lib =
                 let treeDefinition = new TreeDefinition()
                 let tree = repo.ObjectDatabase.CreateTree(treeDefinition)
                 let last_commit = repo.ObjectDatabase.CreateCommit(author, committer, message, tree, emptyCommit, false)
-                //let last_commit = repo.Commit(message, author, committer) 
+                
+                ////////
+                //let year = last_commit.Author.When.Year
+                //let check = last_commit.Author.When.ToUnixTimeSeconds()
+                //let offset = author_date.ToUnixTimeSeconds()
+                //let d = DateTimeOffset.FromUnixTimeSeconds(check)
+                //let question1 = (check = offset )
+                //let question = (author_date = d )
+                //TODO: here the time signature is correct but the commit get wrong date if before 1/1/1970
+                //opened issue https://github.com/libgit2/libgit2sharp/issues/1707
+                //but related to libgit2
+                //maybe this is a workaround ? https://stackoverflow.com/questions/33640779/edit-old-commit-messages-using-libgit2sharpy
                 let master_branch =  repo.Branches.["master"]
                 Commands.Checkout(repo, master_branch) |> ignore
                 repo.Branches.Remove(src_branch)
