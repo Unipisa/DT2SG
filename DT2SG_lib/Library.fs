@@ -23,7 +23,18 @@ module Lib =
             for subdir in srcDir.GetDirectories() do
                 let dstSubDir = System.IO.Path.Combine(dstPath, subdir.Name)
                 directoryCopy subdir.FullName dstSubDir copySubDirs
-
+    let fixDateBefore1970(repo: Repository,author_date:DateTimeOffset) =
+        //fix dates as http://git.661346.n2.nabble.com/Back-dating-commits-way-back-for-constitution-git-td5365303.html#a5365346
+        //save commit object in a file, to be edited 
+        //$git cat-file -p HEAD > tmp.txt 
+        //edit tmp.txt, changing sign of author time
+        //$ [edit tmp.txt] 
+        //replace just created commit by handcrafted one 
+        //$ git reset --hard HEAD^ 
+        //$ git hash-object -t commit -w tmp.txt
+        //$ git update-ref -m 'commit: foo' refs/heads/master \ 
+        //fa5e5a2b6f27f10ce920ca82ffef07ed3eb3f26f 
+        ()
     let initGit (root_path,branch_name,committer_name, committer_email) =
         // find git going up
         let gitPath = Repository.Discover(root_path)
@@ -126,6 +137,8 @@ module Lib =
                 let last_commit = repo.Commit(message, author, committer)
                 () 
         let tag = repo.ApplyTag(tag);
+        if author_date.Year < 1970
+            then   fixDateBefore1970(repo,author_date)
         ()
 
     let after_latest_slash (dir: string) =
