@@ -48,6 +48,35 @@ module Lib =
                 let commit = repo.ObjectDatabase.CreateCommit(empty_sig, empty_sig, "empty commit", tree, emptyCommit, false)
                 src_branch <- repo.Branches.Add(branch_name, commit)
         repo
+    let executeInBash(command) =
+        let mutable result = ""
+        use  proc = new System.Diagnostics.Process()
+        (
+        proc.StartInfo.FileName <- "/bin/bash";
+        proc.StartInfo.Arguments <- "-c \" " + command + " \"";
+        proc.StartInfo.UseShellExecute <- false;
+        proc.StartInfo.RedirectStandardOutput <- true;
+        proc.StartInfo.RedirectStandardError <- true;
+        proc.Start();
+
+        result <- result + proc.StandardOutput.ReadToEnd();
+        result <- result +  proc.StandardError.ReadToEnd();
+
+        proc.WaitForExit();
+        )
+        result
+
+    let fixPre1970Commit(author_date:DateTimeOffset, bad_date:DateTimeOffset, message) = 
+        let toReplace = bad_date.ToUnixTimeSeconds().ToString()
+        let replaceWith = author_date.ToUnixTimeSeconds.ToString()
+        let out = executeInBash("git cat-file -p HEAD")
+        let corrected = out.Replace(toReplace, replaceWith)
+        executeInBash("git reset --hard HEAD^ ") |> ignore
+        let hash = executeInBash("git hash-object -t commit -w " + corrected)
+        executeInBash("git update-ref -m '" + message + "' refs/heads/master " + corrected)
+        ()
+
+
 
     let commitVersionToGit (
                                 existing_files: Set<string>, 
@@ -56,7 +85,7 @@ module Lib =
                                 message, 
                                 author_name, 
                                 author_email, 
-                                author_date, 
+                                author_date:DateTimeOffset, 
                                 tag, 
                                 committer_name, 
                                 committer_email, 
@@ -68,8 +97,6 @@ module Lib =
                                 ) =
         let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
         let mutable src_branch = repo.Branches.[branch_name]
-
-        //qui "source" in realtà è path indicato - git path
         Commands.Checkout(repo, src_branch) |> ignore
         let options = new CheckoutOptions()
         options.CheckoutModifiers <- CheckoutModifiers.Force // { CheckoutModifiers = CheckoutModifiers.Force };
@@ -95,25 +122,45 @@ module Lib =
         Commands.Unstage(repo, files_unstage)
         Commands.Stage(repo, files)
         // Create the committer's signature and commit
+        let offset = author_date.ToUnixTimeSeconds()
+        //let d = DateTimeOffset.FromUnixTimeSeconds(offset)
+        //let question = (author_date = d )
         let author = Signature(author_name, author_email, author_date)
         let committer = Signature(committer_name, committer_email, commit_date)
         // Commit to the repository
+        let mutable last_commit = List.head (Seq.toList repo.Commits)
         if is_first_commit
            then 
                 let emptyCommit = Array.empty<Commit>
                 let treeDefinition = new TreeDefinition()
                 let tree = repo.ObjectDatabase.CreateTree(treeDefinition)
-                let last_commit = repo.ObjectDatabase.CreateCommit(author, committer, message, tree, emptyCommit, false)
-                //let last_commit = repo.Commit(message, author, committer) 
+                last_commit <- repo.ObjectDatabase.CreateCommit(author, committer, message, tree, emptyCommit, false)
+                
+                ////////
+                //let year = last_commit.Author.When.Year
+                //let check = last_commit.Author.When.ToUnixTimeSeconds()
+                //let offset = author_date.ToUnixTimeSeconds()
+                //let d = DateTimeOffset.FromUnixTimeSeconds(check)
+                //let question1 = (check = offset )
+                //let question = (author_date = d )
+                //TODO: here the time signature is correct but the commit get wrong date if before 1/1/1970
+                //opened issue https://github.com/libgit2/libgit2sharp/issues/1707
+                //but related to libgit2
+                //maybe this is a workaround ? https://stackoverflow.com/questions/33640779/edit-old-commit-messages-using-libgit2sharpy
                 let master_branch =  repo.Branches.["master"]
                 Commands.Checkout(repo, master_branch) |> ignore
                 repo.Branches.Remove(src_branch)
                 src_branch <- repo.Branches.Add(branch_name, last_commit)
                 Commands.Checkout(repo, src_branch) |> ignore
             else
-                let last_commit = repo.Commit(message, author, committer)
+                last_commit <- repo.Commit(message, author, committer)
                 () 
+        if author_date.Year < 1970 
+            then
+                let bad_date = last_commit.Author.When 
+                fixPre1970Commit(author_date, bad_date, message)
         let tag = repo.ApplyTag(tag);
+       
         ()
 
     let after_latest_slash (dir: string) =
@@ -139,9 +186,15 @@ module Lib =
                                                         dir = (ignore_row.Columns.[0])
                                                     )
                                 IgnoreList)
+        //TODO: better investigare how to handle symlink
+        ///https://stackoverflow.com/questions/1485155/check-if-a-file-is-real-or-a-symbolic-link
+        let filter_symbolic_links = fun (path: string) ->
+                                    let pathInfo = new FileInfo(path);
+                                    not(pathInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
         let directories =
                 Array.sort (Directory.GetDirectories(root_path))
                 |> Array.filter filter_ignore_dir
+                |> Array.filter filter_symbolic_links
         let last_dir = after_latest_slash (Array.last directories)
         let mutable is_first_commit = true
         for dir in directories do
@@ -159,7 +212,7 @@ module Lib =
                     //let (handle:string) = (info.Value.GetColumn "author_github") 
                     //if not(String.IsNullOrWhiteSpace(handle)) 
                     //    then none("@" + handle) 
-                    //    else 
+                    //    else yy
                     none ((info.Value.GetColumn "author_email"))
                 else none (null)
 
@@ -177,6 +230,7 @@ module Lib =
 
             let ignore_files_to_commit =
                 if short_dir  = last_dir
+                    //TODO: filter only existing files
                     then ignore_files
                     else Seq.empty
 
