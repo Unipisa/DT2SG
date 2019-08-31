@@ -5,6 +5,14 @@
 Make a synthetic Git from directory tree 
 (Directory Tree 2 Synthetic Git).
 
+**Documentation to be updated**
+
+![example](./ETC/screen-commands.png)
+
+![example](./ETC/screen.png)
+
+![example](./ETC/screen-2.png)
+
 This project aim to build a tool for reconstructing a Git repository from a directory of source code:
 we start from a list of directory, - at the moment - one for each release version, and we create a Git where each directory is a commit.
 

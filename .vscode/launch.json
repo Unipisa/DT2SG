@@ -18,13 +18,13 @@
                 "-c", "Guido Scatena",
                 "-e", "guido.scatena@unipi.it",
             ],
-            //"args": [
-            //    "-r", "/mnt/DATA/SRC/SoftwareHeritage/test-SWH-CMM-DEPOSITORY/SOURCE/cmm/",
-            //    "-m", "/mnt/DATA/SRC/SoftwareHeritage/test-SWH-CMM-DEPOSITORY/SOURCE/authors.csv",
-            //    "-i", "/mnt/DATA/SRC/SoftwareHeritage/test-SWH-CMM-DEPOSITORY/SOURCE/ignore.csv",
-            //    "-c", "Guido Scatena",
-            //    "-e", "guido.scatena@unipi.it",
-            //],
+/*             "args": [
+                "-r", "/mnt/DATA/SRC/SoftwareHeritage/test-SWH-CMM-DEPOSITORY/SOURCE/cmm/",
+                "-m", "/mnt/DATA/SRC/SoftwareHeritage/test-SWH-CMM-DEPOSITORY/SOURCE/authors.csv",
+                "-i", "/mnt/DATA/SRC/SoftwareHeritage/test-SWH-CMM-DEPOSITORY/SOURCE/ignore.csv",
+                "-c", "Guido Scatena",
+                "-e", "guido.scatena@unipi.it",
+            ], */
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "console": "internalConsole"
