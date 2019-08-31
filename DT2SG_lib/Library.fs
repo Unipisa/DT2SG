@@ -86,7 +86,7 @@ module Lib =
         let out = executeInBash("git cat-file -p HEAD", path)
         let corrected = out.Replace(toReplace, replaceWith)
         executeInBash("git reset --hard HEAD^ ", path) |> ignore
-        let hash = executeInBash("git hash-object -t commit -w " + corrected, path)
+        let hash = executeInBash("git hash-object -t commit -w " + corrected, path) //TODO: fix not correct read hash
         executeInBash("git update-ref -m '" + message + "' refs/heads/master " + corrected, path) |> ignore
         ()
 
