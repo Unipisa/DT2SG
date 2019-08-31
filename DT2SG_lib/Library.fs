@@ -59,16 +59,19 @@ module Lib =
                 let commit = repo.ObjectDatabase.CreateCommit(empty_sig, empty_sig, "empty commit", tree, emptyCommit, false)
                 src_branch <- repo.Branches.Add(branch_name, commit)
         repo
-    let executeInBash(command) =
+    let executeInBash(command, path) =
         let mutable result = ""
         use  proc = new System.Diagnostics.Process()
         (
+        
         proc.StartInfo.FileName <- "/bin/bash";
         proc.StartInfo.Arguments <- "-c \" " + command + " \"";
         proc.StartInfo.UseShellExecute <- false;
         proc.StartInfo.RedirectStandardOutput <- true;
         proc.StartInfo.RedirectStandardError <- true;
-        proc.Start();
+        proc.StartInfo.WorkingDirectory <- path
+        proc.Start() |> ignore
+
 
         result <- result + proc.StandardOutput.ReadToEnd();
         result <- result +  proc.StandardError.ReadToEnd();
@@ -77,14 +80,14 @@ module Lib =
         )
         result
 
-    let fixPre1970Commit(author_date:DateTimeOffset, bad_date:DateTimeOffset, message) = 
+    let fixPre1970Commit(author_date:DateTimeOffset, bad_date:DateTimeOffset, message, path) = 
         let toReplace = bad_date.ToUnixTimeSeconds().ToString()
-        let replaceWith = author_date.ToUnixTimeSeconds.ToString()
-        let out = executeInBash("git cat-file -p HEAD")
+        let replaceWith = author_date.ToUnixTimeSeconds().ToString()
+        let out = executeInBash("git cat-file -p HEAD", path)
         let corrected = out.Replace(toReplace, replaceWith)
-        executeInBash("git reset --hard HEAD^ ") |> ignore
-        let hash = executeInBash("git hash-object -t commit -w " + corrected)
-        executeInBash("git update-ref -m '" + message + "' refs/heads/master " + corrected) |> ignore
+        executeInBash("git reset --hard HEAD^ ", path) |> ignore
+        let hash = executeInBash("git hash-object -t commit -w " + corrected, path)
+        executeInBash("git update-ref -m '" + message + "' refs/heads/master " + corrected, path) |> ignore
         ()
 
 
@@ -169,7 +172,8 @@ module Lib =
         if author_date.Year < 1970 
             then
                 let bad_date = last_commit.Author.When 
-                fixPre1970Commit(author_date, bad_date, message)
+                let path = repo.Info.WorkingDirectory
+                fixPre1970Commit(author_date, bad_date, message, path)
         let tag = repo.ApplyTag(tag);
        
         ()
