@@ -5,6 +5,7 @@
     "version": "0.2.0",
     "configurations": [
 
+
         {
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
@@ -18,10 +19,10 @@
                 "-c", "Guido Scatena",
                 "-e", "guido.scatena@unipi.it",
             ],
-/*             "args": [
-                "-r", "/mnt/DATA/SRC/SoftwareHeritage/test-SWH-CMM-DEPOSITORY/SOURCE/cmm/",
-                "-m", "/mnt/DATA/SRC/SoftwareHeritage/test-SWH-CMM-DEPOSITORY/SOURCE/authors.csv",
-                "-i", "/mnt/DATA/SRC/SoftwareHeritage/test-SWH-CMM-DEPOSITORY/SOURCE/ignore.csv",
+            /*  "args": [
+                "-r", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/cmm/",
+                "-m", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/authors.csv",
+                "-i", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/ignore.csv",
                 "-c", "Guido Scatena",
                 "-e", "guido.scatena@unipi.it",
             ], */
