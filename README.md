@@ -34,17 +34,23 @@ The relased version are self-contained (git is not required), but if commits dat
 dotnet run --project ./SSGC_app/SSGC_app.fsproj $path_to_src_root
 ```
 
+on released self-contained versions
+
+
+```bash
+dotnet run DT2SG_XXXX.exe
+```
+
 ## Build
 
-```
-bash
+```bash
 dotnet "build" "./SSGC_app/SSGC_app.fsproj" 
 ```
 
 ## Release
 
 Self-contained
-```
+```bash
 dotnet publish --configuration Release --runtime ubuntu.18.04-x64  /p:PublishSingleFile=true --self-contained true  
 ./warp-packer --arch linux-x64 --input_dir bin/Release/netcoreapp2.2/ubuntu.18.04-x64/publish/ --exec DT2SG_app --output DT2SG_Ubuntu18.04-x64.exe
 
@@ -56,7 +62,9 @@ dotnet publish --configuration Release --runtime osx.10.11-x64  /p:PublishSingle
 
 ```
 
-```
+where [wrap-packer](https://github.com/dgiagio/warp) is obtained as follows
+
+```bash
 curl -Lo warp-packer https://github.com/dgiagio/warp/releases/download/v0.3.0/linux-x64.warp-packer
 
 chmod +x warp-packer
