@@ -12,20 +12,20 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/DT2SG_app/bin/Debug/netcoreapp2.2/DT2SG_app.dll",
-            "args": [
+/*             "args": [
                 "-r", "${workspaceFolder}/DT2SG_app/demo/source/",
                 "-m", "${workspaceFolder}/DT2SG_app/demo/source_metadata/metadata_example.csv",
                 "-i", "${workspaceFolder}/DT2SG_app/demo/source_metadata/ignore_example.csv",
                 "-c", "Guido Scatena",
                 "-e", "guido.scatena@unipi.it",
-            ],
-            /*  "args": [
+            ], */
+            "args": [
                 "-r", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/cmm/",
                 "-m", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/authors.csv",
                 "-i", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/ignore.csv",
                 "-c", "Guido Scatena",
                 "-e", "guido.scatena@unipi.it",
-            ], */
+            ], 
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "console": "internalConsole"

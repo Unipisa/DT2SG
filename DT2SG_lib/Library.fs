@@ -101,8 +101,8 @@ module Lib =
 
 
     let commitVersionToGit (
-                                // all files in master branch
-                                existing_files: Set<string>, 
+                                metadata_path: string, 
+                                ignore_path: string,
                                 // current directory-version
                                 dir_to_add: string, 
                                 //git repostiroy
@@ -126,7 +126,7 @@ module Lib =
                                 is_first_commit:bool
                                 ) =
 
-        let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
+        //let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
         let mutable src_branch = repo.Branches.[branch_name]
         // move to branch containing versioning 
         Commands.Checkout(repo, src_branch) |> ignore
@@ -152,8 +152,10 @@ module Lib =
         
         // stage current version files
         let files =
+                    let filter_metadata_files = fun (path: string) -> not(path = metadata_path or path = ignore_path)
                     Directory.GetFiles (repo.Info.WorkingDirectory, "*.*", SearchOption.AllDirectories)
                     |> Array.filter filter_git_files
+                    |> Array.filter filter_metadata_files
         Commands.Stage(repo, files)
         // Create the committer's signature
         let offset = author_date.ToUnixTimeSeconds()
@@ -194,12 +196,6 @@ module Lib =
         let git = initGit (root_path, branch_name, committer_name, committer_email)
         let git_path = git.Info.Path
         let relative_src_path = root_path.Replace(git_path.Replace("/.git", ""), "")
-        
-
-        let existing_files =
-                    Directory.GetFiles (git.Info.WorkingDirectory, "*.*", SearchOption.AllDirectories)
-                    |> Array.filter filter_git_files
-                    |> Set.ofArray
 
         let authorsAndDateStrings = CsvFile.Load(metadata_path).Cache()
         
@@ -268,7 +264,8 @@ module Lib =
                 ("Commit dir: {0} with message : {1} on {2}", orig, message, commit_date.ToLocalTime().ToString())
             commitVersionToGit
                 (
-                 existing_files,
+                 metadata_path, 
+                 ignore_path,
                  short_dir,
                  git,
                  short_dir + " - " + message,
