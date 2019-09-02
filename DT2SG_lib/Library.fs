@@ -152,7 +152,7 @@ module Lib =
         
         // stage current version files
         let files =
-                    let filter_metadata_files = fun (path: string) -> not(path = metadata_path or path = ignore_path)
+                    let filter_metadata_files = fun (path: string) -> not(path = metadata_path || path = ignore_path)
                     Directory.GetFiles (repo.Info.WorkingDirectory, "*.*", SearchOption.AllDirectories)
                     |> Array.filter filter_git_files
                     |> Array.filter filter_metadata_files
