@@ -38,7 +38,7 @@ on released self-contained versions
 
 
 ```bash
-dotnet run DT2SG_XXXX.exe
+dotnet run DT2SG_app.dll
 ```
 
 ## Build
@@ -52,13 +52,10 @@ dotnet "build" "./SSGC_app/SSGC_app.fsproj"
 Self-contained
 ```bash
 dotnet publish --configuration Release --runtime ubuntu.18.04-x64  /p:PublishSingleFile=true --self-contained true  
-./warp-packer --arch linux-x64 --input_dir bin/Release/netcoreapp2.2/ubuntu.18.04-x64/publish/ --exec DT2SG_app --output DT2SG_Ubuntu18.04-x64.exe
 
 dotnet publish --configuration Release --runtime win-x64  /p:PublishSingleFile=true --self-contained true   
-./warp-packer --arch windows-x64 --input_dir bin/Release/netcoreapp2.2/win-x64/publish/ --exec DT2SG_app.exe --output DT2SG_Win-x64.exe
 
 dotnet publish --configuration Release --runtime osx.10.11-x64  /p:PublishSingleFile=true --self-contained true   
-./warp-packer --arch macos-x64 --input_dir bin/Release/netcoreapp2.2/win-x64/publish/ --exec DT2SG_app.exe --output DT2SG_Win-x64.exe
 
 ```
 
