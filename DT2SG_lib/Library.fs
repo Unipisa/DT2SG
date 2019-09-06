@@ -134,7 +134,7 @@ module Lib =
         options.CheckoutModifiers <- CheckoutModifiers.Force 
         // get the current version from master to src branch
         repo.CheckoutPaths("master", [relative_src_path + dir_to_add], options);
-        // if there are out of version files
+        // if there are out-of-version files
         if not(Seq.isEmpty ignore_files_to_commit)
             then
                 for file in ignore_files_to_commit do
@@ -167,13 +167,16 @@ module Lib =
            then 
                 let emptyCommit = Array.empty<Commit>
                 let treeDefinition = new TreeDefinition()
-                let tree = repo.ObjectDatabase.CreateTree(treeDefinition)
+                let tree = repo.ObjectDatabase.CreateTree(repo.Index)//repo.ObjectDatabase.CreateTree(treeDefinition)
                 last_commit <- repo.ObjectDatabase.CreateCommit(author, committer, message, tree, emptyCommit, false)
+                //last_commit <- repo.Commit(message, author, committer)
                 let master_branch =  repo.Branches.["master"]
                 Commands.Checkout(repo, master_branch) |> ignore
                 repo.Branches.Remove(src_branch)
                 src_branch <- repo.Branches.Add(branch_name, last_commit)
-                Commands.Checkout(repo, src_branch) |> ignore
+                let force = new CheckoutOptions()
+                force.CheckoutModifiers <- CheckoutModifiers.Force
+                Commands.Checkout(repo, src_branch, force) |> ignore
             else
                 last_commit <- repo.Commit(message, author, committer)
                 () 
