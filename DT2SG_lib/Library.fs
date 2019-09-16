@@ -132,6 +132,13 @@ module Lib =
         Commands.Checkout(repo, src_branch) |> ignore
         let options = new CheckoutOptions()
         options.CheckoutModifiers <- CheckoutModifiers.Force 
+        // clear dir
+        let p = repo.Info.WorkingDirectory //+ relative_src_path 
+        let di = new DirectoryInfo(p)
+        let ff = di.GetFiles() 
+        for file in ff do 
+            file.Delete();
+        done
         // get the current version from master to src branch
         repo.CheckoutPaths("master", [relative_src_path + dir_to_add], options);
         // if there are out-of-version files
@@ -149,7 +156,6 @@ module Lib =
                     Directory.GetFiles (repo.Info.WorkingDirectory + relative_src_path, "*.*", SearchOption.AllDirectories)
         System.IO.Directory.Delete(repo.Info.WorkingDirectory + relative_src_path, true)
         Commands.Unstage(repo, files_unstage)
-        
         // stage current version files
         let files =
                     let filter_metadata_files = fun (path: string) -> not(path = metadata_path || path = ignore_path)
@@ -186,7 +192,7 @@ module Lib =
                 let path = repo.Info.WorkingDirectory
                 fixPre1970Commit(author_date, bad_date, message, path, branch_name)
         let tag = repo.ApplyTag(tag);
-       
+        repo.Index.Clear()
         ()
 
     let after_latest_slash (dir: string) =
