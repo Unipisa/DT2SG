@@ -102,7 +102,6 @@ module Lib =
 
     let commitVersionToGit (
                                 metadata_path: string, 
-                                ignore_path: string,
                                 // current directory-version
                                 dir_to_add: string, 
                                 //git repostiroy
@@ -117,7 +116,7 @@ module Lib =
                                 committer_email:string, 
                                 commit_date,
                                 // used only in the last version to commit out of version files 
-                                ignore_files_to_commit,
+                                ignore_files_to_commit: string seq,
                                 // name of the branch that will contains the versions
                                 branch_name,
                                 // path inside master branch of versions. ie /source when versions are /source/v1 ...
@@ -125,12 +124,11 @@ module Lib =
                                 // true if first commit
                                 is_first_commit:bool
                                 ) =
-
-        //let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
-        let message_lines = message.Split '|'
+        // split message on multiple lines by '|'
         let message =
+            let message_lines = message.Split '|'
             let t = new System.Text.StringBuilder();
-            for l in message_lines do t.Append(l); t.AppendLine() done
+            for l in message_lines do t.Append(l) |> ignore; t.AppendLine() |> ignore done
             t.ToString()
         let mutable src_branch = repo.Branches.[branch_name]
         // move to branch containing versioning 
@@ -138,18 +136,14 @@ module Lib =
         let options = new CheckoutOptions()
         options.CheckoutModifiers <- CheckoutModifiers.Force 
         // clear dir
-        let p = repo.Info.WorkingDirectory //+ relative_src_path 
-        let di = new DirectoryInfo(p)
-        let ff = di.GetFiles() 
-        for file in ff do 
-            file.Delete();
-        done
+        Seq.iter (fun (file:FileInfo) ->  file.Delete()) (DirectoryInfo(repo.Info.WorkingDirectory).GetFiles()) 
         // get the current version from master to src branch
         repo.CheckoutPaths("master", [relative_src_path + dir_to_add], options);
         // if there are out-of-version files
         if not(Seq.isEmpty ignore_files_to_commit)
             then
                 for file in ignore_files_to_commit do
+                    let file = file.Replace(repo.Info.WorkingDirectory + relative_src_path , "")
                     repo.CheckoutPaths("master", [relative_src_path + file], options)
                     if System.IO.File.Exists(repo.Info.WorkingDirectory + relative_src_path + file) 
                         then System.IO.File.Copy(repo.Info.WorkingDirectory + relative_src_path + file, repo.Info.WorkingDirectory + "/" + file )
@@ -163,7 +157,7 @@ module Lib =
         Commands.Unstage(repo, files_unstage)
         // stage current version files
         let files =
-                    let filter_metadata_files = fun (path: string) -> not(path = metadata_path || path = ignore_path)
+                    let filter_metadata_files = fun (path: string) -> not(path = metadata_path)
                     Directory.GetFiles (repo.Info.WorkingDirectory, "*.*", SearchOption.AllDirectories)
                     |> Array.filter filter_git_files
                     |> Array.filter filter_metadata_files
@@ -178,9 +172,8 @@ module Lib =
            then 
                 let emptyCommit = Array.empty<Commit>
                 let treeDefinition = new TreeDefinition()
-                let tree = repo.ObjectDatabase.CreateTree(repo.Index)//repo.ObjectDatabase.CreateTree(treeDefinition)
+                let tree = repo.ObjectDatabase.CreateTree(repo.Index)
                 last_commit <- repo.ObjectDatabase.CreateCommit(author, committer, message, tree, emptyCommit, false)
-                //last_commit <- repo.Commit(message, author, committer)
                 let master_branch =  repo.Branches.["master"]
                 Commands.Checkout(repo, master_branch) |> ignore
                 repo.Branches.Remove(src_branch)
@@ -211,21 +204,13 @@ module Lib =
         //TODO: add check that git has clear status to avoid conflicts
         let git_path = git.Info.Path
         let relative_src_path = root_path.Replace(git_path.Replace("/.git", ""), "")
-
-        let authorsAndDateStrings = CsvFile.Load(metadata_path).Cache()
-        
-        let IgnoreList = CsvFile.Load(ignore_path).Cache().Rows
-        let ignore_files = 
-                    Seq.map (fun (ignore_row: CsvRow) -> ignore_row.Columns.[0]) IgnoreList
-
-        let directories =
-
-                let filter_ignore_dir = fun (row: string) ->
-                                    not (Seq.exists (fun (ignore_row: CsvRow) ->
-                                                        let dir = after_latest_slash row
-                                                        dir = (ignore_row.Columns.[0])
-                                                    )
-                                IgnoreList)
+        let authorsAndDateStrings = CsvFile.Load(metadata_path).Cache().Rows
+        let version_directories = 
+                    Seq.map (fun (ignore_row: CsvRow) -> ignore_row.Columns.[0]) authorsAndDateStrings
+        let directories, not_versioned_files =
+                let get_only_version_directories = fun (dir: string) ->
+                                            (Seq.exists (fun (row: CsvRow) -> (row.Columns.[0]) = after_latest_slash dir )
+                                            authorsAndDateStrings)
                 //TODO: better investigare how to handle symlink
                 ///https://stackoverflow.com/questions/1485155/check-if-a-file-is-real-or-a-symbolic-link
                 let filter_symbolic_links = fun (path: string) ->
@@ -233,9 +218,11 @@ module Lib =
                                     not(pathInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
                 in
                 Array.sort (Directory.GetDirectories(root_path))
-                |> Array.filter filter_ignore_dir
                 |> Array.filter filter_symbolic_links
+                |> Array.partition get_only_version_directories
         
+        let not_versioned_files = Array.append not_versioned_files (Array.sort (Directory.GetFiles(root_path)))
+
         let last_dir = after_latest_slash (Array.last directories)
         let mutable is_first_commit = true
 
@@ -244,7 +231,7 @@ module Lib =
 
             let info = 
                 let finder = fun (row: CsvRow) -> (row.GetColumn "dir" = short_dir)
-                Seq.tryFind finder (authorsAndDateStrings.Rows)
+                Seq.tryFind finder (authorsAndDateStrings)
             
             let dest = git_path.Replace("/.git", "")
             let orig = Path.Combine(root_path, dir)
@@ -268,10 +255,9 @@ module Lib =
 
             let tag = short_dir
 
-            let ignore_files_to_commit =
+            let files_to_commit_only_on_last_version =
                 if short_dir  = last_dir
-                    //TODO: filter only existing files
-                    then ignore_files
+                    then Seq.ofArray not_versioned_files
                     else Seq.empty
 
             let commit_date = DateTimeOffset.Now
@@ -280,7 +266,6 @@ module Lib =
             commitVersionToGit
                 (
                  metadata_path, 
-                 ignore_path,
                  short_dir,
                  git,
                  short_dir + " - " + message,
@@ -291,13 +276,13 @@ module Lib =
                  committer_name,
                  committer_email,
                  commit_date,
-                 ignore_files_to_commit,
+                 files_to_commit_only_on_last_version,
                  branch_name,
                  relative_src_path,
                  is_first_commit
                     )
             is_first_commit <- false
             ()
-        // restore dicrectory to master 
-        Commands.Checkout(git, "master") |> ignore //TODO:genera conflitto
+        // restore directory to master 
+        Commands.Checkout(git, "master") |> ignore 
         ()

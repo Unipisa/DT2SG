@@ -29,7 +29,7 @@
               "args": [
                 "-r", "/mnt/DATA/SRC/SoftwareHeritage/TEMP_1_WORKBENCH/source/",
                 "-m", "/mnt/DATA/SRC/SoftwareHeritage/TEMP_1_WORKBENCH/metadata/metadata_softi.csv",
-                "-i", "/mnt/DATA/SRC/SoftwareHeritage/TEMP_1_WORKBENCH/metadata/ignore.csv",
+                //"-i", "/mnt/DATA/SRC/SoftwareHeritage/TEMP_1_WORKBENCH/metadata/ignore.csv",
                 "-c", "Carlo Montangero",
                 "-e", "carlo@montangero.eu",
             ],  
