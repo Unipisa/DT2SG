@@ -226,27 +226,27 @@ module Lib =
             let short_dir = after_latest_slash dir
 
             let info = 
-                let finder = fun (row: CsvRow) -> (row.GetColumn "dir" = short_dir)
+                let finder = fun (row: CsvRow) -> (row.GetColumn "directory name" = short_dir)
                 Seq.tryFind finder (authorsAndDateStrings)
             
             let dest = git_path.Replace("/.git", "")
             let orig = Path.Combine(root_path, dir)
             
 
-            let author_name = if info.IsSome then info.Value.GetColumn "author_name" else none (null)
+            let author_name = if info.IsSome then info.Value.GetColumn "author name" else none (null)
             let author_handle =
                 if info.IsSome then
-                    none ((info.Value.GetColumn "author_email"))
+                    none ((info.Value.GetColumn "author email"))
                 else none (null)
 
             let message =
-                if info.IsSome then none (info.Value.GetColumn "message")
+                if info.IsSome then none (info.Value.GetColumn "commit message")
                 else none (null)
 
             let author_date =
                 if info.IsSome then
                     DateTimeOffset.ParseExact
-                        (info.Value.GetColumn "date", date_format, System.Globalization.CultureInfo.InvariantCulture)
+                        (info.Value.GetColumn "author date", date_format, System.Globalization.CultureInfo.InvariantCulture)
                 else DateTimeOffset.Now
 
             let tag = short_dir
