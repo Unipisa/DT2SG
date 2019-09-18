@@ -108,13 +108,13 @@ module Lib =
                                 //git repostiroy
                                 repo: Repository,
                                 // commit  
-                                message,
-                                author_name, 
-                                author_email, 
+                                message:string,
+                                author_name:string, 
+                                author_email:string, 
                                 author_date:DateTimeOffset, 
-                                tag, 
-                                committer_name, 
-                                committer_email, 
+                                tag:string, 
+                                committer_name:string, 
+                                committer_email:string, 
                                 commit_date,
                                 // used only in the last version to commit out of version files 
                                 ignore_files_to_commit,
@@ -127,6 +127,11 @@ module Lib =
                                 ) =
 
         //let filter_existing_files = (fun (file: string) -> not(existing_files.Contains(file)))
+        let message_lines = message.Split '|'
+        let message =
+            let t = new System.Text.StringBuilder();
+            for l in message_lines do t.Append(l); t.AppendLine() done
+            t.ToString()
         let mutable src_branch = repo.Branches.[branch_name]
         // move to branch containing versioning 
         Commands.Checkout(repo, src_branch) |> ignore
@@ -203,6 +208,7 @@ module Lib =
     let createSyntheticGit (root_path: string, metadata_path: string, ignore_path: string, committer_name, committer_email) =
         let branch_name = "src"
         let git = initGit (root_path, branch_name, committer_name, committer_email)
+        //TODO: add check that git has clear status to avoid conflicts
         let git_path = git.Info.Path
         let relative_src_path = root_path.Replace(git_path.Replace("/.git", ""), "")
 
