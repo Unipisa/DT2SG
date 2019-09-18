@@ -16,7 +16,8 @@ Make a synthetic Git from directory tree
 This project aim to build a tool for reconstructing a Git repository from a directory of source code:
 we start from a list of directory, - at the moment - one for each release version, and we create a Git where each directory is a commit.
 
-An [auxillary csv](./metadata_example.csv) files is used to specify authors and date of commits.
+An [auxillary csv](./metadata_example.csv) files is used to specify authors, dates and message commits.
+Every directory/file not listed in the auxillary csv is considered as not versioned - it is committed woth the last version.
 
 It born from the need of [DIUNIPI4SWH](https://github.com/Unipisa/DIUNIPI4SWH) for [Software Heritage](www.softwareheritage.org), partially inspired by the [Spinelli](https://www2.dmst.aueb.gr/dds/)`s work onf [unix history repository](https://github.com/dspinellis/unix-history-repo).
 
