@@ -56,7 +56,6 @@ module Lib =
         let mutable result = ""
         use  proc = new System.Diagnostics.Process()
         (
-        
         proc.StartInfo.FileName <- "/bin/bash";
         proc.StartInfo.Arguments <- "-c \" " + command + " \"";
         proc.StartInfo.UseShellExecute <- false;
@@ -64,11 +63,8 @@ module Lib =
         proc.StartInfo.RedirectStandardError <- true;
         proc.StartInfo.WorkingDirectory <- path
         proc.Start() |> ignore
-
-
         result <- result + proc.StandardOutput.ReadToEnd();
         result <- result +  proc.StandardError.ReadToEnd();
-
         proc.WaitForExit();
         )
         result
