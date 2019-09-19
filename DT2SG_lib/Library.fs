@@ -15,7 +15,7 @@ module Lib =
     let row_curator_name = "curator name"
     let row_curator_email = "curator email"
     let row_commit_message = "commit message"
-    let row_release = "is a realease"    
+    let row_release = "release tag"    
 
     // date format into author.csv
     let date_format = "MM'/'dd'/'yyyy HH':'mm':'ss"
@@ -129,8 +129,8 @@ module Lib =
                                 relative_src_path,
                                 // true if first commit
                                 is_first_commit:bool,
-                                // true if the commit is a release and should be tagged
-                                is_a_release:bool
+                                // a tag name if the directory contains a release, empty otherwise
+                                release_tag:string
                                 ) =
         // split message on multiple lines by '|'
         let message =
@@ -197,7 +197,7 @@ module Lib =
                 let bad_date = last_commit.Author.When 
                 let path = repo.Info.WorkingDirectory
                 fixPre1970Commit(author_date, bad_date, message, path, branch_name)
-        if is_a_release then repo.ApplyTag(tag) |> ignore
+        if not(String.IsNullOrWhiteSpace(release_tag)) then repo.ApplyTag(release_tag) |> ignore
         repo.Index.Clear()
         ()
 
@@ -242,11 +242,7 @@ module Lib =
             let committer_name = if info.IsSome then info.Value.GetColumn row_curator_name else none (null)
             let committer_email = if info.IsSome then info.Value.GetColumn row_curator_email else none (null)
 
-            let is_a_release = if info.IsSome 
-                                then
-                                    let temp =   (info.Value.GetColumn row_release).ToLower()
-                                    temp.TrimEnd() = "y" || temp.TrimEnd() = "yes" 
-                                else false
+            let release_tag = if info.IsSome then info.Value.GetColumn row_release else none (null)
 
             if is_first_commit 
                 then 
@@ -298,7 +294,7 @@ module Lib =
                  branch_name,
                  relative_src_path,
                  is_first_commit,
-                 is_a_release
+                 release_tag
                     )
             is_first_commit <- false
             ()
