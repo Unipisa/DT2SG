@@ -1,17 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="Library.fs" />
-    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="FSharp.Data" Version="3.1.1" />
-    <PackageReference Include="LibGit2Sharp" Version="0.26.0" />
-  </ItemGroup>
+    <PackageReference Include="FSharp.Data"  Version="3.2.4" /> 
+    <PackageReference Include="LibGit2Sharp" Version="0.26.1"  />
 
+    <Reference Include="netstandard" />
+  </ItemGroup>
 </Project>

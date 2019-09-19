@@ -15,23 +15,23 @@
             /*  "args": [
                 "-r", "${workspaceFolder}/DT2SG_app/demo/source/",
                 "-m", "${workspaceFolder}/DT2SG_app/demo/source_metadata/metadata_example.csv",
-                "-i", "${workspaceFolder}/DT2SG_app/demo/source_metadata/ignore_example.csv",
-                "-c", "Guido Scatena",
-                "-e", "guido.scatena@unipi.it",
+                //"-i", "${workspaceFolder}/DT2SG_app/demo/source_metadata/ignore_example.csv",
+                //"-c", "Guido Scatena",
+                //"-e", "guido.scatena@unipi.it",
             ],  */
             /*  "args": [
                 "-r", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/cmm/",
                 "-m", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/authors.csv",
-                "-i", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/ignore.csv",
-                "-c", "Guido Scatena",
-                "-e", "guido.scatena@unipi.it",
+                //"-i", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/ignore.csv",
+                //"-c", "Guido Scatena",
+                //"-e", "guido.scatena@unipi.it",
             ],  */
               "args": [
                 "-r", "/mnt/DATA/SRC/SoftwareHeritage/TEMP_1_WORKBENCH/source/",
                 "-m", "/mnt/DATA/SRC/SoftwareHeritage/TEMP_1_WORKBENCH/metadata/metadata_softi.csv",
                 //"-i", "/mnt/DATA/SRC/SoftwareHeritage/TEMP_1_WORKBENCH/metadata/ignore.csv",
-                "-c", "Carlo Montangero",
-                "-e", "carlo@montangero.eu",
+                //"-c", "Carlo Montangero",
+                //"-e", "carlo@montangero.eu",
             ],  
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,

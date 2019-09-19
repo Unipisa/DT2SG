@@ -7,6 +7,16 @@ open System
 open System.IO
 
 module Lib =
+
+    let row_directory_name = "directory name"
+    let row_author_name = "author name"
+    let row_author_email = "author email"
+    let row_date = "date"
+    let row_curator_name = "curator name"
+    let row_curator_email = "curator email"
+    let row_commit_message = "commit message"
+    let row_release = "is a realease"    
+
     // date format into author.csv
     let date_format = "MM'/'dd'/'yyyy HH':'mm':'ss"
 
@@ -118,7 +128,9 @@ module Lib =
                                 // path inside master branch of versions. ie /source when versions are /source/v1 ...
                                 relative_src_path,
                                 // true if first commit
-                                is_first_commit:bool
+                                is_first_commit:bool,
+                                // true if the commit is a release and should be tagged
+                                is_a_release:bool
                                 ) =
         // split message on multiple lines by '|'
         let message =
@@ -185,7 +197,7 @@ module Lib =
                 let bad_date = last_commit.Author.When 
                 let path = repo.Info.WorkingDirectory
                 fixPre1970Commit(author_date, bad_date, message, path, branch_name)
-        let tag = repo.ApplyTag(tag);
+        if is_a_release then repo.ApplyTag(tag) |> ignore
         repo.Index.Clear()
         ()
 
@@ -194,12 +206,9 @@ module Lib =
                         temp.[temp.Length - 1]
 
 
-    let createSyntheticGit (root_path: string, metadata_path: string, ignore_path: string, committer_name, committer_email) =
-        let branch_name = "src"
-        let git = initGit (root_path, branch_name, committer_name, committer_email)
-        //TODO: add check that git has clear status to avoid conflicts
-        let git_path = git.Info.Path
-        let relative_src_path = root_path.Replace(git_path.Replace("/.git", ""), "")
+    let createSyntheticGit (root_path: string, metadata_path: string, ignore_path: string) =
+        let branch_name = "SourceCode"
+        
         let authorsAndDateStrings = CsvFile.Load(metadata_path).Cache().Rows
         let version_directories = 
                     Seq.map (fun (ignore_row: CsvRow) -> ignore_row.Columns.[0]) authorsAndDateStrings
@@ -221,32 +230,45 @@ module Lib =
 
         let last_dir = after_latest_slash (Array.last directories)
         let mutable is_first_commit = true
-
+        let mutable git_path = ""
+        let mutable relative_src_path  = ""
+        let mutable git = new Repository();
         for dir in directories do
             let short_dir = after_latest_slash dir
-
             let info = 
-                let finder = fun (row: CsvRow) -> (row.GetColumn "directory name" = short_dir)
+                let finder = fun (row: CsvRow) -> (row.GetColumn row_directory_name = short_dir)
                 Seq.tryFind finder (authorsAndDateStrings)
-            
+
+            let committer_name = if info.IsSome then info.Value.GetColumn row_curator_name else none (null)
+            let committer_email = if info.IsSome then info.Value.GetColumn row_curator_email else none (null)
+
+            let is_a_release = if info.IsSome 
+                                then
+                                    let temp =   (info.Value.GetColumn row_release).ToLower()
+                                    temp.TrimEnd() = "y" || temp.TrimEnd() = "yes" 
+                                else false
+
+            if is_first_commit 
+                then 
+                    git <- initGit (root_path, branch_name, committer_name, committer_email)
+                    //TODO: add check that git has clear status to avoid conflicts
+                    git_path <- git.Info.Path
+                    relative_src_path <- root_path.Replace(git_path.Replace("/.git", ""), "")
+
             let dest = git_path.Replace("/.git", "")
             let orig = Path.Combine(root_path, dir)
-            
 
-            let author_name = if info.IsSome then info.Value.GetColumn "author name" else none (null)
-            let author_handle =
-                if info.IsSome then
-                    none ((info.Value.GetColumn "author email"))
-                else none (null)
+            let author_email = if info.IsSome then info.Value.GetColumn row_author_email else none (null)
+            let author_name = if info.IsSome then info.Value.GetColumn row_author_name else none (null)
 
             let message =
-                if info.IsSome then none (info.Value.GetColumn "commit message")
+                if info.IsSome then none (info.Value.GetColumn row_commit_message)
                 else none (null)
 
             let author_date =
                 if info.IsSome then
                     DateTimeOffset.ParseExact
-                        (info.Value.GetColumn "author date", date_format, System.Globalization.CultureInfo.InvariantCulture)
+                        (info.Value.GetColumn row_date, date_format, System.Globalization.CultureInfo.InvariantCulture)
                 else DateTimeOffset.Now
 
             let tag = short_dir
@@ -266,16 +288,17 @@ module Lib =
                  git,
                  short_dir + " - " + message,
                  author_name.TrimEnd(),
-                 author_handle.TrimEnd(),
+                 author_email.TrimEnd(),
                  author_date,
                  tag,
-                 committer_name,
-                 committer_email,
+                 committer_name.TrimEnd(),
+                 committer_email.TrimEnd(),
                  commit_date,
                  files_to_commit_only_on_last_version,
                  branch_name,
                  relative_src_path,
-                 is_first_commit
+                 is_first_commit,
+                 is_a_release
                     )
             is_first_commit <- false
             ()
