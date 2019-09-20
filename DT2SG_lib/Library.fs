@@ -117,7 +117,6 @@ module Lib =
                                 author_name:string, 
                                 author_email:string, 
                                 author_date:DateTimeOffset, 
-                                tag:string, 
                                 committer_name:string, 
                                 committer_email:string, 
                                 commit_date,
@@ -267,7 +266,7 @@ module Lib =
                         (info.Value.GetColumn row_date, date_format, System.Globalization.CultureInfo.InvariantCulture)
                 else DateTimeOffset.Now
 
-            let tag = short_dir
+            let tag = if release_tag = "*" then short_dir else release_tag
 
             let files_to_commit_only_on_last_version =
                 if short_dir  = last_dir
@@ -286,7 +285,6 @@ module Lib =
                  author_name.TrimEnd(),
                  author_email.TrimEnd(),
                  author_date,
-                 tag,
                  committer_name.TrimEnd(),
                  committer_email.TrimEnd(),
                  commit_date,
@@ -294,7 +292,7 @@ module Lib =
                  branch_name,
                  relative_src_path,
                  is_first_commit,
-                 release_tag
+                 tag
                     )
             is_first_commit <- false
             ()
