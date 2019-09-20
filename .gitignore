@@ -8,3 +8,5 @@ packages
 rel
 rel/*
 *.exe
+.ionide/*
+.ionide
