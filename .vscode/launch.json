@@ -19,20 +19,20 @@
                 //"-c", "Guido Scatena",
                 //"-e", "guido.scatena@unipi.it",
             ],  */
-            /*  "args": [
-                "-r", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/cmm/",
-                "-m", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/authors.csv",
+              "args": [
+                "-r", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/source/cmm/",
+                "-m", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/source/version_history.csv",
                 //"-i", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/ignore.csv",
                 //"-c", "Guido Scatena",
                 //"-e", "guido.scatena@unipi.it",
-            ],  */
-              "args": [
+            ], 
+            /*  "args": [
                 "-r", "/mnt/DATA/SRC/SoftwareHeritage/TEMP_1_WORKBENCH/source/",
                 "-m", "/mnt/DATA/SRC/SoftwareHeritage/TEMP_1_WORKBENCH/metadata/metadata_softi.csv",
                 //"-i", "/mnt/DATA/SRC/SoftwareHeritage/TEMP_1_WORKBENCH/metadata/ignore.csv",
                 //"-c", "Carlo Montangero",
                 //"-e", "carlo@montangero.eu",
-            ],  
+            ],*/  
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "console": "internalConsole"

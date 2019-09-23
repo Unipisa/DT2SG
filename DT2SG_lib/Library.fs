@@ -142,8 +142,6 @@ module Lib =
         Commands.Checkout(repo, src_branch) |> ignore
         let options = new CheckoutOptions()
         options.CheckoutModifiers <- CheckoutModifiers.Force 
-        // clear dir
-        Seq.iter (fun (file:FileInfo) ->  file.Delete()) (DirectoryInfo(repo.Info.WorkingDirectory).GetFiles()) 
         // get the current version from master to src branch
         repo.CheckoutPaths("master", [relative_src_path + dir_to_add], options);
         // if there are out-of-version files
@@ -196,7 +194,11 @@ module Lib =
                 let bad_date = last_commit.Author.When 
                 let path = repo.Info.WorkingDirectory
                 fixPre1970Commit(author_date, bad_date, message, path, branch_name)
+        //apply tag
         if not(String.IsNullOrWhiteSpace(release_tag)) then repo.ApplyTag(release_tag) |> ignore
+        //clean up commited files
+        Commands.Unstage(repo,files )
+        Seq.iter (fun (file:FileInfo) ->  file.Delete()) (Seq.map (fun (file_path:string) -> new FileInfo(file_path)) files)  
         repo.Index.Clear()
         ()
 
