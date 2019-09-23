@@ -5,65 +5,41 @@
 Make a synthetic Git from directory tree 
 (Directory Tree 2 Synthetic Git).
 
-**Documentation to be updated**
 
-![example](./ETC/screen-commands.png)
-
-![example](./ETC/screen.png)
-
-![example](./ETC/screen-2.png)
+![example](./ETC/screen_a.png)
 
 This project aim to build a tool for reconstructing a Git repository from a directory of source code:
-we start from a list of directory, - at the moment - one for each release version, and we create a Git where each directory is a commit.
+we start from a list of directory, one for each release version, and we create a Git where each directory is a commit.
 
-An [auxillary csv](./metadata_example.csv) files is used to specify authors, dates and message commits.
-Every directory/file not listed in the auxillary csv is considered as not versioned - it is committed woth the last version.
+An [auxillary csv](./metadata_emaple.csv) files is used to specify authors, dates and message commits.
+Every directory/file not listed in the auxillary csv is considered as not versioned - it is committed with the last version.
 
-It born from the need of [DIUNIPI4SWH](https://github.com/Unipisa/DIUNIPI4SWH) for [Software Heritage](www.softwareheritage.org), partially inspired by the [Spinelli](https://www2.dmst.aueb.gr/dds/)`s work onf [unix history repository](https://github.com/dspinellis/unix-history-repo).
+This software comes from the need of [SWHAPPE](https://github.com/Unipisa/SWHAPPE) for [Software Heritage](www.softwareheritage.org).
 
 *The project is still in aplha stage and under development.*
-
-![example](./ETC/screen.png)
-
-## Warning
-
-The relased version are self-contained (git is not required), but if commits date are pre-1970, git command should be in system path.
 
 ## Usage
 
 ```bash
-dotnet run --project ./SSGC_app/SSGC_app.fsproj $path_to_src_root
+dotnet DT2SG/DT2SG_app.dll -r $path_to_src_root -m $path_to_version_history.csv
 ```
+<!-- 
+![example](./ETC/screen-commands.png)
+ -->
+## Version History file
 
-on released self-contained versions
+The file should contains:
+
+* `directory name`
+* `author name` 		name of the main author
+* `author email` 		email of the main author (when available)
+* `date` 			original date when this commit/version was made
+* `curator name` 		name of the curator person or team
+* `curator email` 		the reference email of the acquisition process
+*  `release tag` 		a tag name if the directory contains a release,	empty otherwise. If equal to `*` then the version is tagged as `directory name`
+* `commit message`	
 
 
-```bash
-dotnet run DT2SG_app.dll
-```
+## Warning
 
-## Build
-
-```bash
-dotnet "build" "./SSGC_app/SSGC_app.fsproj" 
-```
-
-## Release
-
-Self-contained
-```bash
-dotnet publish --configuration Release --runtime ubuntu.18.04-x64  /p:PublishSingleFile=true --self-contained true  
-
-dotnet publish --configuration Release --runtime win-x64  /p:PublishSingleFile=true --self-contained true   
-
-dotnet publish --configuration Release --runtime osx.10.11-x64  /p:PublishSingleFile=true --self-contained true   
-
-```
-
-where [wrap-packer](https://github.com/dgiagio/warp) is obtained as follows
-
-```bash
-curl -Lo warp-packer https://github.com/dgiagio/warp/releases/download/v0.3.0/linux-x64.warp-packer
-
-chmod +x warp-packer
-```
+The relased version are self-contained (git is not required), but if commits date are pre-1970, git command should be in system path.

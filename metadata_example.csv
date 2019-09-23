@@ -1,10 +1,4 @@
-dir,author_name        ,author_email       ,author_github,date,message
-0  ,Giuseppe    Attardi,attardi@di.unipi.it,attardi      ,07/27/1994 21:44:23,"First commit"
-1.1,Giuseppe    Attardi,attardi@di.unipi.it,attardi      ,10/27/1994 12:26:20,"28 Commits since Wed Jul 27 21:44:23 1994 to Thu Oct 27 12:26:20 1994; See ChangeLog for Details."
-1.3,Giuseppe    Attardi,attardi@di.unipi.it,attardi      ,11/07/1994 17:36:34,"29 Commits since Wed Jul 27 21:44:23 1994 to Mon Nov  7 17:36:34 1994; See ChangeLog for Details."
-1.4,CMM_Team_1         ,                   ,             ,10/03/1995 11:43:54,"51 Commits (50 @attardi - 1 @tflagella) since Wed Jul 27 21:44:23 1994 to Tue Oct  3 11:43:54 1995; See ChangeLog for Details. CMM_Team_1: Giuseppe Attardi @attardi and Tito Flagella @tflagella."
-1.5,CMM_Team_2         ,                   ,             ,11/02/1995 16:11:11,"57 Commits (52 @attardi - 3 Iglio - 1 @tflagella) since Wed Jul 27 21:44:23 1994 to Thu Nov  2 16:11:11 1995. CMM_Team_2: Giuseppe Attardi @attardi - Tito Flagella @tflagella - Pietro Iglio."
-1.6,CMM_Team_2         ,                   ,             ,06/06/1996 11:07:03,"64 Commits (59 @attardi - 4 Iglio - 1 @tflagella) since Wed Jul 27 21:44:23 1994 to Thu Jun  6 11:07:03 1996. CMM_Team_2: Giuseppe Attardi @attardi - Tito Flagella @tflagella - Pietro Iglio."
-1.7,CMM_Team_2         ,                   ,             ,11/24/1996 19:13:45 1996,"78 Commits (72 @attardi - 4 Iglio - 2 @tflagella) since Wed Jul 27 21:44:23 1994 to Sun Nov 24 19:13:45 1996. CMM_Team_2: Giuseppe Attardi @attardi - Tito Flagella @tflagella - Pietro Iglio."
-1.8,CMM_Team_2         ,                   ,             ,05/15/1997 08:24:54,"78 Commits (105 @attardi - 6 Iglio - 2 @tflagella) since Wed Jul 27 21:44:23 1994 to Thu May 15 08:24:54 1997. CMM_Team_2: Giuseppe Attardi @attardi - Tito Flagella @tflagella - Pietro Iglio."
-1.9,CMM_Team_2         ,                   ,             ,03/03/1998 00:00:00,"132 Commits (124 @attardi - 6 Iglio - 2 @tflagella) since Wed Jul 27 21:44:23 1994 to March 3 1998. CMM_Team_2: Giuseppe Attardi @attardi - Tito Flagella @tflagella - Pietro Iglio."
+directory name,author name,author email,date,curator name,curator email,release tag,commit message
+v1,Me,me@example.com,Me,me@example.com,05/04/2011 04:30:00,*,"First commit|First commit description|and so on"
+v2,He,he@example.com,Me,me@example.com,05/11/2013 09:10:00,*,"Second commit"
+v3,Me,me@example.com,Me,me@example.com,08/27/2018 10:30:00,*,"Third commit"
