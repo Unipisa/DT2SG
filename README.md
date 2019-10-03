@@ -14,7 +14,7 @@ we start from a list of directory, one for each release version, and we create a
 An [auxillary csv](./metadata_emaple.csv) files is used to specify authors, dates and message commits.
 Every directory/file not listed in the auxillary csv is considered as not versioned - it is committed with the last version.
 
-This software comes from the need of [SWHAPPE](https://github.com/Unipisa/SWHAPPE) for [Software Heritage](www.softwareheritage.org).
+This software is used by [SWHAPPE](https://github.com/Unipisa/SWHAPPE) for [Software Heritage](www.softwareheritage.org).
 
 *The project is still in aplha stage and under development.*
 
