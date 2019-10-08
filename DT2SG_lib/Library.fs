@@ -25,18 +25,30 @@ module Lib =
     let filter_git_files = fun (path: string) -> not(path.Contains(".git"))
 
     let rec directoryCopy srcPath dstPath copySubDirs =
-        if not <| System.IO.Directory.Exists(srcPath) then
-            let msg = System.String.Format("Source directory does not exist or could not be found: {0}", srcPath)
-            raise (System.IO.DirectoryNotFoundException(msg))
-        if not <| System.IO.Directory.Exists(dstPath) then System.IO.Directory.CreateDirectory(dstPath) |> ignore
-        let srcDir = new System.IO.DirectoryInfo(srcPath)
-        for file in srcDir.GetFiles() do
-            let temppath = System.IO.Path.Combine(dstPath, file.Name)
-            file.CopyTo(temppath, true) |> ignore
-        if copySubDirs then
-            for subdir in srcDir.GetDirectories() do
-                let dstSubDir = System.IO.Path.Combine(dstPath, subdir.Name)
-                directoryCopy subdir.FullName dstSubDir copySubDirs
+        try
+            if not <| System.IO.Directory.Exists(srcPath) then
+                let msg = System.String.Format("Source directory does not exist or could not be found: {0}", srcPath)
+                raise (System.IO.DirectoryNotFoundException(msg))
+            if not <| System.IO.Directory.Exists(dstPath) then System.IO.Directory.CreateDirectory(dstPath) |> ignore
+            let srcDir = new System.IO.DirectoryInfo(srcPath)
+            for file in srcDir.GetFiles() do
+                let temppath = System.IO.Path.Combine(dstPath, file.Name)
+                let b = FileInfo(temppath)
+                //if b.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint) //TODO: here if symbolic link do not copy; todo: copy symbolic link without resolving it
+                //    then ()
+                //    else 
+                try 
+                    file.CopyTo(temppath, true) |> ignore 
+                with 
+                    e -> ()
+        
+            
+            if copySubDirs then
+                for subdir in srcDir.GetDirectories() do
+                    let dstSubDir = System.IO.Path.Combine(dstPath, subdir.Name)
+                    directoryCopy subdir.FullName dstSubDir copySubDirs
+        with 
+                    e -> ()
 
     let initGit (root_path,branch_name,committer_name, committer_email) =
         // find git going up
@@ -195,7 +207,13 @@ module Lib =
                 let path = repo.Info.WorkingDirectory
                 fixPre1970Commit(author_date, bad_date, message, path, branch_name)
         //apply tag
-        if not(String.IsNullOrWhiteSpace(release_tag)) then repo.ApplyTag(release_tag) |> ignore
+        if not(String.IsNullOrWhiteSpace(release_tag)) 
+                then 
+                    //let repo.ApplyTag(release_tag)  //BUG: this do not annotate the tag
+                    let command = "git tag -a " + dir_to_add + " -m \"" + release_tag + "\""
+                    let path = repo.Info.WorkingDirectory
+                    executeInBash(command, path) |> ignore
+                    
         //clean up commited files
         Commands.Unstage(repo,files )
         Seq.iter (fun (file:FileInfo) ->  file.Delete()) (Seq.map (fun (file_path:string) -> new FileInfo(file_path)) files)  

@@ -20,8 +20,8 @@
                 //"-e", "guido.scatena@unipi.it",
             ],  */
               "args": [
-                "-r", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/source/cmm/",
-                "-m", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/source/version_history.csv",
+                "-r", "/mnt/DATA/SRC/SoftwareHeritage/TAUmus-Workbench/source/",
+                "-m", "/mnt/DATA/SRC/SoftwareHeritage/version_history.csv",
                 //"-i", "/mnt/DATA/SRC/SoftwareHeritage/CMM-Workbench/3-source/ignore.csv",
                 //"-c", "Guido Scatena",
                 //"-e", "guido.scatena@unipi.it",
@@ -37,6 +37,5 @@
             "stopAtEntry": false,
             "console": "internalConsole"
         }
-
-    ]
+   ]
 }
