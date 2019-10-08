@@ -1,6 +1,6 @@
 # SWHAP-DT2SG
 
-[![Build Status](https://travis-ci.com/Unipisa/SWHAP-DT2SG.svg?token=uYktkpxbywknDpAJce3c&branch=master)](https://travis-ci.com/Unipisa/SWHAP-DT2SG)
+[![Build Status](https://travis-ci.com/Unipisa/DT2SG.svg?token=uYktkpxbywknDpAJce3c&branch=master)](https://travis-ci.com/Unipisa/DT2SG)
 
 Make a synthetic Git from directory tree 
 (Directory Tree 2 Synthetic Git).
@@ -8,13 +8,13 @@ Make a synthetic Git from directory tree
 
 ![example](./ETC/screen_a.png)
 
-This project aim to build a tool for reconstructing a Git repository from a directory of source code:
-we start from a list of directory, one for each release version, and we create a Git where each directory is a commit.
+This project aim at building a tool for reconstructing a Git repository from a directory of source code to be used by [SWHAPPE](https://github.com/Unipisa/SWHAPPE) for [Software Heritage](www.softwareheritage.org).
 
-An [auxillary csv](./metadata_emaple.csv) files is used to specify authors, dates and message commits.
-Every directory/file not listed in the auxillary csv is considered as not versioned - it is committed with the last version.
+It starts from a list of directories, one for each release version, and creates a Git where each directory is a commit.
 
-This software comes from the need of [SWHAPPE](https://github.com/Unipisa/SWHAPPE) for [Software Heritage](www.softwareheritage.org).
+An [auxillary csv](./metadata_emaple.csv) file is used to specify authors, commit dates and messages.
+Any file or directory not listed in the auxillary csv is considered as "not versioned" - it is committed with the last version.
+
 
 *The project is still in aplha stage and under development.*
 
