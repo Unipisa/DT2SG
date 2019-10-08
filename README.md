@@ -1,6 +1,6 @@
 # SWHAP-DT2SG
 
-[![Build Status](https://travis-ci.com/Unipisa/SWHAP-DT2SG.svg?token=uYktkpxbywknDpAJce3c&branch=master)](https://travis-ci.com/Unipisa/SWHAP-DT2SG)
+[![Build Status](https://travis-ci.com/Unipisa/DT2SG.svg?token=uYktkpxbywknDpAJce3c&branch=master)](https://travis-ci.com/Unipisa/DT2SG)
 
 Make a synthetic Git from directory tree 
 (Directory Tree 2 Synthetic Git).
