@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Library.fs" />
@@ -9,6 +9,5 @@
     <PackageReference Include="FSharp.Data"  Version="3.2.4" /> 
     <PackageReference Include="LibGit2Sharp" Version="0.26.1"  />
 
-    <Reference Include="netstandard" />
   </ItemGroup>
 </Project>
